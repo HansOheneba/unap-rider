@@ -5,13 +5,21 @@ import { mockStore } from "@/lib/mock/data-store";
 
 type AuthResponse = { token: string; rider: RiderSession };
 
+function mockRiderForPhone(phone: string) {
+  const normalized = normalizePhone(phone);
+  const rider =
+    mockStore.findRiderByPhone(normalized) ?? mockStore.getRider("rdr_001");
+  if (!rider) throw new Error("Rider not found");
+  return { ...rider, phone: normalized || rider.phone };
+}
+
 export async function sendOtp(phone: string): Promise<void> {
   const normalized = normalizePhone(phone);
   return apiFetchOrMock(
     "/rider/auth/send-otp",
     () => {
-      const rider = mockStore.findRiderByPhone(normalized);
-      if (!rider) throw new Error("Phone not registered");
+      if (!phone.trim()) throw new Error("Phone required");
+      mockRiderForPhone(phone);
       return undefined;
     },
     { method: "POST", body: JSON.stringify({ phone: normalized }) },
@@ -26,10 +34,8 @@ export async function verifyOtp(
   return apiFetchOrMock(
     "/rider/auth/verify-otp",
     () => {
-      const rider = mockStore.findRiderByPhone(normalized);
-      if (!rider || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
-        throw new Error("Invalid OTP");
-      }
+      if (!otp.trim()) throw new Error("Invalid OTP");
+      const rider = mockRiderForPhone(phone);
       return {
         token: `mock_rider_${rider.id}`,
         rider,

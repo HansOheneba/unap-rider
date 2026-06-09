@@ -47,7 +47,7 @@ export default function LoginPage() {
       toast.success("Code sent. Use any 6 digits in dev mode.");
       setStep("otp");
     } catch {
-      toast.error("Phone not registered. Try +233 24 123 4567.");
+      toast.error("Enter a phone number and try again.");
     } finally {
       setLoading(false);
     }
@@ -111,11 +111,11 @@ export default function LoginPage() {
                   <Label htmlFor="phone">Phone number</Label>
                   <Input
                     id="phone"
-                    type="tel"
-                    placeholder="+233 24 123 4567"
+                    type="text"
+                    placeholder="Any number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    autoComplete="tel"
+                    autoComplete="off"
                     autoFocus
                     disabled={loading}
                   />
@@ -158,7 +158,7 @@ export default function LoginPage() {
 
           {step === "phone" ? (
             <p className="mt-6 text-center text-xs text-zinc-400">
-              Dev: Kwame +233 24 123 4567, any 6-digit code
+              Dev: any phone number, any 6-digit code
             </p>
           ) : null}
         </div>
