@@ -1,0 +1,17 @@
+{
+  "name": "Unapologetic Rider",
+  "short_name": "UNAP Rider",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logos/unapologeticBlack.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
