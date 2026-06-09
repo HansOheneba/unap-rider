@@ -63,18 +63,16 @@ export default function ProfilePage() {
     <div className="px-4 py-6">
       <header className="mb-6">
         <p className="eyebrow mb-1">Your account</p>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
-          Profile
-        </h1>
+        <h1>Profile</h1>
       </header>
 
       <Card className="mb-4">
         <CardContent className="space-y-4 pt-4">
           <div>
-            <p className="text-lg font-semibold text-zinc-900">
+            <h3>
               {rider.firstName} {rider.lastName}
-            </p>
-            <p className="text-sm text-zinc-500">{rider.phone}</p>
+            </h3>
+            <small>{rider.phone}</small>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -82,7 +80,7 @@ export default function ProfilePage() {
             <Badge variant="zinc">{statusLabel(rider.vehicleType)}</Badge>
           </div>
 
-          <div className="space-y-3 text-sm text-zinc-600">
+          <div className="space-y-3 text-zinc-600">
             <p className="flex items-start gap-2">
               <MapPinned className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
               <span>{rider.zone}</span>
@@ -99,12 +97,10 @@ export default function ProfilePage() {
         <CardTitle className="px-4 pt-4">Duty status</CardTitle>
         <CardContent className="flex items-center justify-between gap-4">
           <div>
-            <Label htmlFor="duty" className="text-base">
-              On duty
-            </Label>
-            <p className="text-sm text-zinc-500">
+            <Label htmlFor="duty">On duty</Label>
+            <small className="mt-1 block">
               Toggle when you start or end your shift.
-            </p>
+            </small>
           </div>
           <Switch
             id="duty"
@@ -115,11 +111,7 @@ export default function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Button
-        variant="outline"
-        className="w-full"
-        onClick={handleLogout}
-      >
+      <Button variant="outline" className="w-full" onClick={handleLogout}>
         <LogOut className="h-4 w-4" />
         Sign out
       </Button>

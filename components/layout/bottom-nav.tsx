@@ -14,7 +14,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white safe-bottom">
+    <nav className="app-nav fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white safe-bottom">
       <div className="relative mx-auto flex h-16 max-w-lg items-center justify-around px-8">
         {links.map(({ href, label, icon: Icon }) => {
           const active =
@@ -24,7 +24,7 @@ export function BottomNav() {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center gap-1 text-xs font-semibold min-h-12 justify-center",
+                "flex min-h-12 flex-col items-center justify-center gap-1",
                 active ? "text-zinc-900" : "text-zinc-400",
               )}
             >

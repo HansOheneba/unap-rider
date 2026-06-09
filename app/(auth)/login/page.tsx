@@ -9,6 +9,7 @@ import { sendOtp, verifyOtp } from "@/lib/api/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
   InputOTP,
   InputOTPGroup,
@@ -72,7 +73,7 @@ export default function LoginPage() {
   if (!hydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50">
-        <p className="text-sm text-zinc-500">Loading...</p>
+        <p className="text-zinc-500">Loading...</p>
       </div>
     );
   }
@@ -80,7 +81,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
       <div className="border-b border-zinc-200 bg-black px-4 py-3 text-center">
-        <p className="eyebrow text-zinc-400">U Rider</p>
+        <p className="eyebrow">U Rider</p>
       </div>
 
       <div className="flex flex-1 items-center justify-center p-4">
@@ -94,14 +95,12 @@ export default function LoginPage() {
               className="mb-6 object-contain"
               priority
             />
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
-              {step === "phone" ? "Rider sign in" : "Enter your code"}
-            </h1>
-            <p className="mt-1 text-center text-sm text-zinc-500">
+            <h1>{step === "phone" ? "Rider sign in" : "Enter your code"}</h1>
+            <small className="mt-1 block text-center">
               {step === "phone"
                 ? "Enter the phone number on your rider account."
                 : `Enter the code we sent to ${phone}`}
-            </p>
+            </small>
           </div>
 
           <div className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">

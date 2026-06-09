@@ -26,14 +26,14 @@ export function OnMyWayBanner({ packageCount }: Props) {
   };
 
   return (
-    <div className="rounded-2xl bg-zinc-900 p-4 text-white shadow-lg">
+    <div className="on-dark rounded-2xl bg-zinc-900 p-4 shadow-lg">
       <div className="flex items-start gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#E8192C]">
           <Bike className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <p className="font-bold">All packages loaded</p>
-          <p className="mt-1 text-sm text-zinc-300">
+          <h3>All packages loaded</h3>
+          <p className="mt-1">
             Tap when you leave the warehouse. Customers get a heads up to keep
             their phone nearby.
           </p>
@@ -41,7 +41,7 @@ export function OnMyWayBanner({ packageCount }: Props) {
       </div>
       <Button
         size="lg"
-        className="mt-4 w-full bg-[#E8192C] text-base font-bold hover:bg-[#c91526]"
+        className="mt-4 w-full bg-[#E8192C] hover:bg-[#c91526]"
         disabled={onMyWay.isPending}
         onClick={handleDepart}
       >

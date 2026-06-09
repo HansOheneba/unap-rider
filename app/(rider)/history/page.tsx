@@ -21,9 +21,7 @@ export default function HistoryPage() {
     <div className="px-4 py-6">
       <header className="mb-6">
         <p className="eyebrow mb-1">Completed runs</p>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
-          History
-        </h1>
+        <h1>History</h1>
       </header>
 
       {isLoading ? (
@@ -33,7 +31,7 @@ export default function HistoryPage() {
         </div>
       ) : !data?.data.length ? (
         <div className="rounded-xl border border-dashed border-zinc-200 bg-white px-4 py-10 text-center">
-          <p className="text-sm text-zinc-500">No completed deliveries yet.</p>
+          <p className="text-zinc-500">No completed deliveries yet.</p>
         </div>
       ) : (
         <>

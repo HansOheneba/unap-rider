@@ -17,7 +17,7 @@ export function RiderGuard({ children }: { children: React.ReactNode }) {
   if (!hydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-50">
-        <p className="text-sm text-zinc-500">Loading...</p>
+        <p className="text-zinc-500">Loading...</p>
       </div>
     );
   }

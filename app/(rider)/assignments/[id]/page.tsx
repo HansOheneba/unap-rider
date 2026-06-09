@@ -23,9 +23,9 @@ import { formatDeliveryLocation, telUrl, whatsAppUrl } from "@/lib/format";
 
 function SpecRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between py-2.5 text-sm">
-      <span className="text-zinc-500">{label}</span>
-      <span className="font-semibold text-zinc-900">{value}</span>
+    <div className="flex items-center justify-between py-2.5">
+      <small>{label}</small>
+      <p className="font-medium">{value}</p>
     </div>
   );
 }
@@ -61,7 +61,7 @@ export default function AssignmentDetailPage() {
   if (error || !data) {
     return (
       <div className="bg-zinc-100 px-4 py-6 text-center">
-        <p className="text-sm text-zinc-500">Shipment not found.</p>
+        <p className="text-zinc-500">Shipment not found.</p>
         <Button variant="link" asChild className="mt-2">
           <Link href="/">Back to shipments</Link>
         </Button>
@@ -76,7 +76,7 @@ export default function AssignmentDetailPage() {
 
   return (
     <>
-      <div className="bg-zinc-900 px-4 pb-4 pt-4 text-white">
+      <div className="on-dark bg-zinc-900 px-4 pb-4 pt-4">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -89,8 +89,8 @@ export default function AssignmentDetailPage() {
             </Link>
           </Button>
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-zinc-400">{data.trackingNumber}</p>
-            <h1 className="truncate text-xl font-bold">{primaryItem}</h1>
+            <small>{data.trackingNumber}</small>
+            <h2 className="truncate">{primaryItem}</h2>
           </div>
           <AssignmentStatusBadge status={data.status} />
         </div>
@@ -106,10 +106,8 @@ export default function AssignmentDetailPage() {
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-100">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs text-zinc-500">Deliver to</p>
-              <p className="text-lg font-bold text-zinc-900">
-                {data.customerName}
-              </p>
+              <small>Deliver to</small>
+              <h3>{data.customerName}</h3>
             </div>
             <div className="flex gap-2">
               <Button
@@ -137,11 +135,9 @@ export default function AssignmentDetailPage() {
           <div className="mt-3 flex items-start gap-2 rounded-xl bg-zinc-50 p-3">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#E8192C]" />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium leading-snug text-zinc-900">
-                {fullAddress}
-              </p>
+              <p className="font-medium leading-snug">{fullAddress}</p>
               {data.landmark ? (
-                <p className="mt-1 text-sm font-semibold text-amber-700">
+                <p className="mt-1 font-medium text-amber-700">
                   Landmark: {data.landmark}
                 </p>
               ) : null}
@@ -153,9 +149,7 @@ export default function AssignmentDetailPage() {
         </div>
 
         <div className="rounded-2xl bg-zinc-100 p-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Shipment details
-          </p>
+          <p className="section-label mb-2">Shipment details</p>
           <div className="divide-y divide-zinc-200">
             <SpecRow label="Items" value={`${data.itemCount}`} />
             <SpecRow
@@ -173,21 +167,17 @@ export default function AssignmentDetailPage() {
         </div>
 
         <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-100">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-            Package contents
-          </p>
+          <p className="section-label mb-2">Package contents</p>
           <div className="divide-y divide-zinc-100">
             {data.items.map((item, i) => (
-              <div key={i} className="flex justify-between py-3 text-sm">
+              <div key={i} className="flex justify-between py-3">
                 <div>
-                  <p className="font-semibold text-zinc-900">
-                    {item.productName}
-                  </p>
-                  <p className="text-zinc-500">
+                  <p className="font-medium">{item.productName}</p>
+                  <small>
                     {[item.size, item.colorName].filter(Boolean).join(" · ")}
-                  </p>
+                  </small>
                 </div>
-                <span className="font-bold">x{item.quantity}</span>
+                <p className="font-medium">x{item.quantity}</p>
               </div>
             ))}
           </div>
@@ -195,21 +185,17 @@ export default function AssignmentDetailPage() {
 
         {data.customerNote ? (
           <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4">
-            <p className="text-xs font-semibold text-sky-700">Customer note</p>
-            <p className="mt-1 text-sm font-medium text-sky-900">
-              {data.customerNote}
-            </p>
+            <small className="font-medium text-sky-700">Customer note</small>
+            <p className="mt-1 font-medium text-sky-900">{data.customerNote}</p>
           </div>
         ) : null}
 
         {data.internalNote ? (
           <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
-            <p className="text-xs font-semibold text-violet-700">
+            <small className="font-medium text-violet-700">
               Internal rider note
-            </p>
-            <p className="mt-1 text-sm font-semibold text-violet-900">
-              {data.internalNote}
-            </p>
+            </small>
+            <p className="mt-1 font-medium text-violet-900">{data.internalNote}</p>
           </div>
         ) : null}
 

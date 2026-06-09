@@ -188,7 +188,7 @@ export function SlideToConfirm({
       />
       <p
         className={cn(
-          "pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-semibold text-white transition-opacity duration-150",
+          "pointer-events-none absolute inset-0 flex items-center justify-center text-white transition-opacity duration-150",
           labelState === "dragging" && "opacity-40",
         )}
       >

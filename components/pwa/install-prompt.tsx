@@ -93,12 +93,12 @@ export function InstallPrompt() {
       <div className="mx-4 mb-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="font-bold text-zinc-900">Add to Home Screen</p>
-            <p className="mt-1 text-sm text-zinc-600">
+            <h3>Add to Home Screen</h3>
+            <small className="mt-1 block">
               Tap <Share className="inline h-4 w-4" /> Share, then{" "}
               <strong>Add to Home Screen</strong> for quick access on your
               runs.
-            </p>
+            </small>
           </div>
           <button
             type="button"
@@ -116,11 +116,11 @@ export function InstallPrompt() {
   if (!deferred) return null;
 
   return (
-    <div className="mx-4 mb-3 rounded-2xl border border-zinc-900 bg-zinc-900 p-4 text-white shadow-lg">
+    <div className="on-dark mx-4 mb-3 rounded-2xl border border-zinc-900 bg-zinc-900 p-4 shadow-lg">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-bold">Install U Rider</p>
-          <p className="mt-1 text-sm text-zinc-300">
+          <h3>Install U Rider</h3>
+          <p className="mt-1">
             Put the app on your home screen for one-tap access while you are on
             the road.
           </p>

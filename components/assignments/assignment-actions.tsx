@@ -92,7 +92,7 @@ export function AssignmentActions({ orderId, status }: Props) {
           {status === "assigned" ? (
             <Button
               size="lg"
-              className="w-full bg-[#E8192C] text-base font-bold hover:bg-[#c91526]"
+              className="w-full bg-[#E8192C] hover:bg-[#c91526]"
               disabled={loading}
               onClick={handlePickup}
             >
@@ -104,10 +104,10 @@ export function AssignmentActions({ orderId, status }: Props) {
 
           {status === "picked_up" ? (
             <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-center">
-              <p className="text-sm font-semibold text-sky-900">
+              <p className="font-medium text-sky-900">
                 Package loaded on your bike
               </p>
-              <p className="mt-1 text-sm text-sky-700">
+              <p className="mt-1 text-sky-700">
                 Pick up any remaining orders, then go back to shipments and tap
                 <strong> I&apos;m on my way</strong> to notify customers.
               </p>

@@ -33,14 +33,10 @@ export function DeliveryTimeline({ events }: { events: DeliveryEvent[] }) {
                 ) : null}
               </div>
               <div className="pb-5">
-                <p className="font-semibold text-zinc-900">
-                  {eventTypeLabel(event.type)}
-                </p>
-                <p className="text-sm text-zinc-500">
-                  {formatDateTime(event.at)}
-                </p>
+                <p className="font-medium">{eventTypeLabel(event.type)}</p>
+                <small>{formatDateTime(event.at)}</small>
                 {event.note ? (
-                  <p className="mt-1 rounded-lg bg-zinc-50 px-2 py-1 text-sm text-zinc-600">
+                  <p className="mt-1 rounded-lg bg-zinc-50 px-2 py-1 text-zinc-600">
                     {event.note}
                   </p>
                 ) : null}
