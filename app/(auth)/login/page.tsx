@@ -44,7 +44,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await sendOtp(phone.trim());
-      toast.success("Code sent. Use any 6 digits in dev mode.");
+      toast.success("Code sent.");
       setStep("otp");
     } catch {
       toast.error("Enter a phone number and try again.");
@@ -80,7 +80,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-50">
       <div className="border-b border-zinc-200 bg-black px-4 py-3 text-center">
-        <p className="eyebrow text-zinc-400">Est. 2024 | Rider Access</p>
+        <p className="eyebrow text-zinc-400">U Rider</p>
       </div>
 
       <div className="flex flex-1 items-center justify-center p-4">
@@ -88,7 +88,7 @@ export default function LoginPage() {
           <div className="mb-8 flex flex-col items-center">
             <Image
               src="/icons/master-icon.png"
-              alt="Unapologetic"
+              alt="U Rider"
               width={72}
               height={72}
               className="mb-6 object-contain"
@@ -99,8 +99,8 @@ export default function LoginPage() {
             </h1>
             <p className="mt-1 text-center text-sm text-zinc-500">
               {step === "phone"
-                ? "Phone OTP for assigned riders only."
-                : `Code sent to ${phone}`}
+                ? "Enter the phone number on your rider account."
+                : `Enter the code we sent to ${phone}`}
             </p>
           </div>
 
@@ -111,11 +111,11 @@ export default function LoginPage() {
                   <Label htmlFor="phone">Phone number</Label>
                   <Input
                     id="phone"
-                    type="text"
-                    placeholder="Any number"
+                    type="tel"
+                    placeholder="Mobile number"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    autoComplete="off"
+                    autoComplete="tel"
                     autoFocus
                     disabled={loading}
                   />
@@ -156,11 +156,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {step === "phone" ? (
-            <p className="mt-6 text-center text-xs text-zinc-400">
-              Dev: any phone number, any 6-digit code
-            </p>
-          ) : null}
         </div>
       </div>
     </div>

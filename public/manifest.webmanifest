@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Unapologetic Rider",
-  "short_name": "Unapologetic Rider",
-  "description": "Accra delivery runs for Unapologetic riders",
+  "name": "U Rider",
+  "short_name": "U Rider",
+  "description": "Delivery runs for Unapologetic riders in Accra",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

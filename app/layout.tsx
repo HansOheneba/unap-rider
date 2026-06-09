@@ -15,7 +15,7 @@ const sora = Sora({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const APP_NAME = "Unapologetic Rider";
+const APP_NAME = "U Rider";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     default: APP_NAME,
     template: `%s · ${APP_NAME}`,
   },
-  description: "Accra in-house delivery app for Unapologetic riders",
+  description: "Delivery runs for Unapologetic riders in Accra",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

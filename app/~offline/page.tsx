@@ -8,7 +8,7 @@ export default function OfflinePage() {
         No connection right now
       </h1>
       <p className="mt-3 max-w-sm text-sm text-zinc-600">
-        Check your mobile data or Wi-Fi, then reopen Unapologetic Rider. Your
+        Check your mobile data or Wi-Fi, then reopen U Rider. Your
         signed-in session is still saved.
       </p>
     </div>
