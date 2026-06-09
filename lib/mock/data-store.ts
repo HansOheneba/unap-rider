@@ -5,11 +5,16 @@ import type {
   DeliveryEventType,
   Paginated,
   RiderAssignment,
+  RiderRunState,
   RiderSession,
   RiderStats,
 } from "@/types";
 import { phonesMatch } from "@/lib/format";
 import { PAGE_SIZE } from "@/lib/constants/pagination";
+import {
+  assertRiderEligible,
+  isAccraInhouseDelivery,
+} from "@/lib/constants/delivery-scope";
 import {
   seedDeliveryEvents,
   seedOrders,
@@ -57,6 +62,7 @@ function toAssignment(order: MockOrder): RiderAssignment {
     id: order.id,
     orderNumber: order.id,
     trackingNumber: order.trackingNumber,
+    deliveryType: order.deliveryType,
     status: deriveStatus(order, events),
     customerName: order.customerName,
     customerPhone: order.customerPhone,
@@ -80,7 +86,15 @@ function toAssignment(order: MockOrder): RiderAssignment {
 }
 
 function riderOrders(riderId: string): MockOrder[] {
-  return store.orders.filter((o) => o.riderId === riderId);
+  return store.orders.filter(
+    (o) =>
+      o.riderId === riderId &&
+      isAccraInhouseDelivery({
+        deliveryType: o.deliveryType,
+        city: o.city,
+        region: o.region,
+      }),
+  );
 }
 
 function now() {
@@ -163,6 +177,72 @@ export const mockStore = {
     return { ...assignment, events };
   },
 
+  getRunState(riderId: string): RiderRunState {
+    const all = riderOrders(riderId).map(toAssignment);
+    const active = all.filter((a) =>
+      ["assigned", "picked_up", "out_for_delivery"].includes(a.status),
+    );
+    const assignedCount = active.filter((a) => a.status === "assigned").length;
+    const pickedUpCount = active.filter((a) => a.status === "picked_up").length;
+    const deliveringCount = active.filter(
+      (a) => a.status === "out_for_delivery",
+    ).length;
+    const completedCount = all.filter(
+      (a) => a.status === "delivered" || a.status === "failed",
+    ).length;
+
+    let phase: RiderRunState["phase"] = "idle";
+    if (active.length > 0) {
+      if (deliveringCount > 0) {
+        phase = "delivering";
+      } else if (assignedCount > 0) {
+        phase = "pickup";
+      } else if (pickedUpCount > 0) {
+        phase = "ready_to_depart";
+      }
+    }
+
+    return {
+      phase,
+      assignedCount,
+      pickedUpCount,
+      deliveringCount,
+      completedCount,
+      canDepart:
+        assignedCount === 0 && pickedUpCount > 0 && deliveringCount === 0,
+      totalActive: active.length,
+    };
+  },
+
+  markOnMyWay(riderId: string): { updated: number } {
+    const rider = store.riders.find((r) => r.id === riderId);
+    if (!rider) throw new Error("Rider not found");
+
+    const picked = riderOrders(riderId)
+      .map((o) => ({ order: o, status: deriveStatus(o, store.deliveryEvents.filter((e) => e.orderId === o.id)) }))
+      .filter((x) => x.status === "picked_up");
+
+    if (picked.length === 0) {
+      throw new Error("No packages ready to depart");
+    }
+
+    const hasAssigned = riderOrders(riderId).some((o) => {
+      const events = store.deliveryEvents.filter((e) => e.orderId === o.id);
+      return deriveStatus(o, events) === "assigned";
+    });
+    if (hasAssigned) {
+      throw new Error("Pick up all assigned orders first");
+    }
+
+    for (const { order } of picked) {
+      appendEvent(order.id, rider, "out_for_delivery", "Rider is on the way");
+      order.outForDeliveryAt = now();
+    }
+
+    rider.status = "on_delivery";
+    return { updated: picked.length };
+  },
+
   getStats(riderId: string): RiderStats {
     const all = riderOrders(riderId).map(toAssignment);
     const today = all.filter((a) =>
@@ -213,6 +293,12 @@ export const mockStore = {
     );
     const rider = store.riders.find((r) => r.id === riderId);
     if (!order || !rider) throw new Error("Assignment not found");
+
+    assertRiderEligible({
+      deliveryType: order.deliveryType,
+      city: order.city,
+      region: order.region,
+    });
 
     const current = deriveStatus(
       order,

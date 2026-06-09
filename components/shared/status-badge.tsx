@@ -1,24 +1,25 @@
 import type { AssignmentStatus } from "@/types";
-import { assignmentStatusLabel } from "@/lib/format";
-import { Badge } from "@/components/ui/badge";
-
-const config: Record<
-  AssignmentStatus,
-  "amber" | "blue" | "orange" | "emerald" | "red"
-> = {
-  assigned: "amber",
-  picked_up: "blue",
-  out_for_delivery: "orange",
-  delivered: "emerald",
-  failed: "red",
-};
+import { getStatusTheme } from "@/lib/status-theme";
+import { cn } from "@/lib/utils";
 
 export function AssignmentStatusBadge({
   status,
+  size = "default",
 }: {
   status: AssignmentStatus;
+  size?: "default" | "lg";
 }) {
+  const theme = getStatusTheme(status);
+
   return (
-    <Badge variant={config[status]}>{assignmentStatusLabel(status)}</Badge>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
+        theme.badge,
+        size === "lg" && "px-3 py-1.5 text-sm",
+      )}
+    >
+      {theme.listLabel}
+    </span>
   );
 }

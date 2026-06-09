@@ -3,6 +3,7 @@ import type {
   AssignmentStatus,
   Paginated,
   RiderAssignment,
+  RiderRunState,
   RiderStats,
 } from "@/types";
 import { apiFetchOrMock } from "./client";
@@ -39,6 +40,22 @@ export async function getAssignment(orderId: string): Promise<AssignmentDetail> 
     if (!detail) throw new Error("Assignment not found");
     return detail;
   });
+}
+
+export async function getRunState(): Promise<RiderRunState> {
+  const riderId = requireRiderId();
+  return apiFetchOrMock("/rider/run-state", () =>
+    mockStore.getRunState(riderId),
+  );
+}
+
+export async function markOnMyWay(): Promise<{ updated: number }> {
+  const riderId = requireRiderId();
+  return apiFetchOrMock(
+    "/rider/run/on-my-way",
+    () => mockStore.markOnMyWay(riderId),
+    { method: "POST" },
+  );
 }
 
 export async function getTodayStats(): Promise<RiderStats> {

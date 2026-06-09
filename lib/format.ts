@@ -1,4 +1,27 @@
-import type { AssignmentStatus, DeliveryEventType } from "@/types";
+import type { AssignmentStatus, DeliveryEventType, RiderAssignment } from "@/types";
+
+export function formatDeliveryLocation(assignment: Pick<
+  RiderAssignment,
+  "address" | "district" | "city" | "region" | "landmark"
+>): {
+  primary: string;
+  secondary: string;
+  landmark: string | null;
+} {
+  const primary = [assignment.address, assignment.district]
+    .filter(Boolean)
+    .join(", ");
+
+  const secondary = [assignment.city, assignment.region]
+    .filter(Boolean)
+    .join(", ");
+
+  return {
+    primary,
+    secondary,
+    landmark: assignment.landmark,
+  };
+}
 
 export function statusLabel(status: string): string {
   return status
@@ -8,11 +31,11 @@ export function statusLabel(status: string): string {
 }
 
 const assignmentLabels: Record<AssignmentStatus, string> = {
-  assigned: "To pick up",
+  assigned: "Awaiting pickup",
   picked_up: "Picked up",
-  out_for_delivery: "Out for delivery",
+  out_for_delivery: "In transit",
   delivered: "Delivered",
-  failed: "Failed",
+  failed: "Returned",
 };
 
 export function assignmentStatusLabel(status: AssignmentStatus): string {
@@ -24,7 +47,7 @@ const eventLabels: Record<DeliveryEventType, string> = {
   picked_up: "Picked up",
   out_for_delivery: "Out for delivery",
   delivered: "Delivered",
-  failed: "Could not deliver",
+  failed: "Returned",
 };
 
 export function eventTypeLabel(type: DeliveryEventType): string {

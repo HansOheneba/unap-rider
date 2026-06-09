@@ -1,9 +1,12 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { toast } from "sonner";
+import { ChevronRight, PackageCheck } from "lucide-react";
 import type { AssignmentStatus } from "@/types";
 import { useAssignmentActions } from "@/lib/hooks/useAssignments";
+import { SlideToConfirm } from "@/components/ui/slide-to-confirm";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,145 +31,160 @@ type Props = {
   status: AssignmentStatus;
 };
 
-const FAILURE_REASONS = [
+const RETURN_REASONS = [
   { value: "customer_unavailable", label: "Customer unavailable" },
   { value: "wrong_address", label: "Wrong address" },
   { value: "refused", label: "Customer refused" },
+  { value: "returned", label: "Returned to warehouse" },
   { value: "other", label: "Other" },
 ];
 
 export function AssignmentActions({ orderId, status }: Props) {
-  const { pickedUp, outForDelivery, delivered, failed } =
-    useAssignmentActions(orderId);
+  const { pickedUp, delivered, failed } = useAssignmentActions(orderId);
 
-  const [dialog, setDialog] = React.useState<
-    "picked_up" | "out_for_delivery" | "delivered" | "failed" | null
-  >(null);
+  const [returnOpen, setReturnOpen] = React.useState(false);
   const [note, setNote] = React.useState("");
   const [reason, setReason] = React.useState("");
 
   const loading =
-    pickedUp.isPending ||
-    outForDelivery.isPending ||
-    delivered.isPending ||
-    failed.isPending;
+    pickedUp.isPending || delivered.isPending || failed.isPending;
 
-  const close = () => {
-    setDialog(null);
-    setNote("");
-    setReason("");
+  const handlePickup = async () => {
+    try {
+      await pickedUp.mutateAsync(undefined);
+      toast.success("Package picked up.");
+    } catch {
+      toast.error("Could not confirm pickup.");
+    }
   };
 
-  const handleConfirm = async () => {
+  const handleDelivered = async () => {
     try {
-      if (dialog === "picked_up") {
-        await pickedUp.mutateAsync(note || undefined);
-        toast.success("Marked as picked up.");
-      } else if (dialog === "out_for_delivery") {
-        await outForDelivery.mutateAsync(note || undefined);
-        toast.success("Marked out for delivery.");
-      } else if (dialog === "delivered") {
-        await delivered.mutateAsync(note || undefined);
-        toast.success("Delivery complete.");
-      } else if (dialog === "failed") {
-        if (!reason) {
-          toast.error("Select a reason.");
-          return;
-        }
-        await failed.mutateAsync({ reason, note: note || undefined });
-        toast.success("Delivery marked as failed.");
-      }
-      close();
+      await delivered.mutateAsync(undefined);
+      toast.success("Delivery confirmed.");
     } catch {
-      toast.error("Could not update. Try again.");
+      toast.error("Could not confirm delivery.");
+    }
+  };
+
+  const handleReturn = async () => {
+    if (!reason) {
+      toast.error("Select a reason.");
+      return;
+    }
+    try {
+      await failed.mutateAsync({ reason, note: note || undefined });
+      toast.success("Marked as returned.");
+      setReturnOpen(false);
+      setNote("");
+      setReason("");
+    } catch {
+      toast.error("Could not update status.");
     }
   };
 
   if (status === "delivered" || status === "failed") return null;
 
-  const primary =
-    status === "assigned"
-      ? { label: "Picked up", action: "picked_up" as const }
-      : status === "picked_up"
-        ? { label: "Out for delivery", action: "out_for_delivery" as const }
-        : { label: "Delivered", action: "delivered" as const };
-
   return (
     <>
-      <div className="fixed inset-x-0 bottom-16 z-40 border-t border-zinc-200 bg-white/95 p-4 backdrop-blur safe-bottom">
-        <div className="mx-auto flex max-w-lg flex-col gap-2">
-          <Button
-            size="lg"
-            className="w-full"
-            disabled={loading}
-            onClick={() => setDialog(primary.action)}
-          >
-            {primary.label}
-          </Button>
-          {status === "out_for_delivery" ? (
+      <div className="fixed inset-x-0 bottom-16 z-40 border-t border-zinc-200 bg-white p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] safe-bottom">
+        <div className="mx-auto max-w-lg space-y-3">
+          {status === "assigned" ? (
             <Button
-              variant="outline"
               size="lg"
-              className="w-full"
+              className="w-full bg-[#E8192C] text-base font-bold hover:bg-[#c91526]"
               disabled={loading}
-              onClick={() => setDialog("failed")}
+              onClick={handlePickup}
             >
-              Could not deliver
+              <PackageCheck className="h-5 w-5" />
+              Confirm pickup
+              <ChevronRight className="h-5 w-5" />
             </Button>
+          ) : null}
+
+          {status === "picked_up" ? (
+            <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-center">
+              <p className="text-sm font-semibold text-sky-900">
+                Package loaded on your bike
+              </p>
+              <p className="mt-1 text-sm text-sky-700">
+                Pick up any remaining orders, then go back to shipments and tap
+                <strong> I&apos;m on my way</strong> to notify customers.
+              </p>
+              <Button variant="outline" className="mt-3 w-full" asChild>
+                <Link href="/">Back to shipments</Link>
+              </Button>
+            </div>
+          ) : null}
+
+          {status === "out_for_delivery" ? (
+            <>
+              <SlideToConfirm
+                label="Slide to confirm delivery"
+                onConfirm={handleDelivered}
+                disabled={loading}
+                loading={delivered.isPending}
+              />
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full border-red-300 text-red-600 hover:bg-red-50"
+                disabled={loading}
+                onClick={() => setReturnOpen(true)}
+              >
+                Could not deliver / Return
+              </Button>
+            </>
           ) : null}
         </div>
       </div>
 
-      <Dialog open={dialog !== null} onOpenChange={(o) => !o && close()}>
+      <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {dialog === "picked_up" && "Confirm pickup"}
-              {dialog === "out_for_delivery" && "Head out for delivery"}
-              {dialog === "delivered" && "Confirm delivery"}
-              {dialog === "failed" && "Could not deliver"}
-            </DialogTitle>
+            <DialogTitle>Return package</DialogTitle>
             <DialogDescription>
-              {dialog === "failed"
-                ? "Tell us what happened so the team can follow up."
-                : "This updates the order for the customer and admin team."}
+              Tell us what happened. The order goes back to the team for
+              follow-up.
             </DialogDescription>
           </DialogHeader>
 
-          {dialog === "failed" ? (
-            <div className="space-y-2">
-              <Label>Reason</Label>
-              <Select value={reason} onValueChange={setReason}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a reason" />
-                </SelectTrigger>
-                <SelectContent>
-                  {FAILURE_REASONS.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : null}
+          <div className="space-y-2">
+            <Label>Reason</Label>
+            <Select value={reason} onValueChange={setReason}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a reason" />
+              </SelectTrigger>
+              <SelectContent>
+                {RETURN_REASONS.map((r) => (
+                  <SelectItem key={r.value} value={r.value}>
+                    {r.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="note">Note (optional)</Label>
             <Textarea
               id="note"
-              placeholder="Add a note for the team"
+              placeholder="What happened at this stop?"
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={close} disabled={loading}>
+            <Button variant="outline" onClick={() => setReturnOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirm} disabled={loading}>
-              {loading ? "Saving..." : "Confirm"}
+            <Button
+              className="bg-red-600 hover:bg-red-700"
+              onClick={handleReturn}
+              disabled={failed.isPending}
+            >
+              {failed.isPending ? "Saving..." : "Confirm return"}
             </Button>
           </DialogFooter>
         </DialogContent>

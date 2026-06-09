@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC = ["/login"];
+const PUBLIC = ["/login", "/~offline"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -10,7 +10,9 @@ export function middleware(request: NextRequest) {
     PUBLIC.some((p) => pathname === p) ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/logos") ||
-    pathname === "/manifest.webmanifest"
+    pathname.startsWith("/icons") ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/sw.js"
   ) {
     return NextResponse.next();
   }
@@ -30,5 +32,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|sw.js|icons).*)"],
 };

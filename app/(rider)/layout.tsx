@@ -1,5 +1,6 @@
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { RiderGuard } from "@/components/layout/rider-guard";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
 
 export default function RiderLayout({
   children,
@@ -8,7 +9,10 @@ export default function RiderLayout({
 }) {
   return (
     <RiderGuard>
-      <div className="mx-auto min-h-screen w-full max-w-lg pb-20">
+      <div className="mx-auto min-h-screen w-full max-w-lg bg-zinc-100 pb-20">
+        <div className="pt-3">
+          <InstallPrompt />
+        </div>
         {children}
       </div>
       <BottomNav />

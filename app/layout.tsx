@@ -15,17 +15,36 @@ const sora = Sora({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+const APP_NAME = "UNAP Rider";
+
 export const metadata: Metadata = {
-  title: "UNAP Rider",
-  description: "Unapologetic delivery rider app",
+  applicationName: APP_NAME,
+  title: {
+    default: APP_NAME,
+    template: `%s · ${APP_NAME}`,
+  },
+  description: "Accra in-house delivery app for Unapologetic riders",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "UNAP Rider",
+    title: APP_NAME,
+  },
+  formatDetection: {
+    telephone: false,
   },
   icons: {
-    apple: "/logos/unapologeticBlack.png",
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      {
+        url: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
   },
 };
 

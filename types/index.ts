@@ -1,3 +1,5 @@
+export type DeliveryType = "accra_inhouse" | "partner";
+
 export type DeliveryEventType =
   | "assigned"
   | "picked_up"
@@ -36,10 +38,27 @@ export type AssignmentStatus =
   | "delivered"
   | "failed";
 
+export type RiderRunPhase =
+  | "pickup"
+  | "ready_to_depart"
+  | "delivering"
+  | "idle";
+
+export type RiderRunState = {
+  phase: RiderRunPhase;
+  assignedCount: number;
+  pickedUpCount: number;
+  deliveringCount: number;
+  completedCount: number;
+  canDepart: boolean;
+  totalActive: number;
+};
+
 export type RiderAssignment = {
   id: string;
   orderNumber: string;
   trackingNumber: string;
+  deliveryType: DeliveryType;
   status: AssignmentStatus;
   customerName: string;
   customerPhone: string;
@@ -90,4 +109,5 @@ export type FailureReason =
   | "customer_unavailable"
   | "wrong_address"
   | "refused"
+  | "returned"
   | "other";

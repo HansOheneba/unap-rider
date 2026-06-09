@@ -6,12 +6,29 @@ import {
   getAssignment,
   getAssignments,
   getHistory,
+  getRunState,
   getTodayStats,
   markDelivered,
   markFailed,
-  markOutForDelivery,
+  markOnMyWay,
   markPickedUp,
 } from "@/lib/api/assignments";
+
+export function useRunState() {
+  return useQuery({
+    queryKey: ["rider", "run-state"],
+    queryFn: getRunState,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useOnMyWay() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: markOnMyWay,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["rider"] }),
+  });
+}
 
 export function useTodayStats() {
   return useQuery({
@@ -35,7 +52,7 @@ export function useAssignments(statuses?: AssignmentStatus[]) {
       if (!statuses?.length) return all;
       return all.filter((a) => statuses.includes(a.status));
     },
-    refetchInterval: 60_000,
+    refetchInterval: 30_000,
   });
 }
 
@@ -65,11 +82,6 @@ export function useAssignmentActions(orderId: string) {
     onSuccess: invalidate,
   });
 
-  const outForDelivery = useMutation({
-    mutationFn: (note?: string) => markOutForDelivery(orderId, note),
-    onSuccess: invalidate,
-  });
-
   const delivered = useMutation({
     mutationFn: (note?: string) => markDelivered(orderId, note),
     onSuccess: invalidate,
@@ -81,5 +93,5 @@ export function useAssignmentActions(orderId: string) {
     onSuccess: invalidate,
   });
 
-  return { pickedUp, outForDelivery, delivered, failed };
+  return { pickedUp, delivered, failed };
 }

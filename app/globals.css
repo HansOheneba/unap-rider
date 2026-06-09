@@ -20,7 +20,7 @@
 }
 
 :root {
-  --background: #fafafa;
+  --background: #f4f4f5;
   --foreground: #18181b;
   --card: #ffffff;
   --card-foreground: #18181b;
@@ -29,8 +29,9 @@
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
   --border: #e4e4e7;
-  --destructive: #dc2626;
-  --radius: 0.625rem;
+  --destructive: #e8192c;
+  --radius: 1rem;
+  --accent-red: #e8192c;
 }
 
 @layer base {

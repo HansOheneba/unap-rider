@@ -87,10 +87,10 @@ export default function LoginPage() {
         <div className="w-full max-w-sm">
           <div className="mb-8 flex flex-col items-center">
             <Image
-              src="/logos/unapologeticBlack.png"
+              src="/icons/master-icon.png"
               alt="Unapologetic"
-              width={160}
-              height={36}
+              width={72}
+              height={72}
               className="mb-6 object-contain"
               priority
             />
