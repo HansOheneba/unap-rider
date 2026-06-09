@@ -15,7 +15,7 @@ const sora = Sora({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const APP_NAME = "UNAP Rider";
+const APP_NAME = "Unapologetic Rider";
 
 export const metadata: Metadata = {
   applicationName: APP_NAME,

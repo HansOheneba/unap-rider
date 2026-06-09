@@ -119,7 +119,7 @@ export function InstallPrompt() {
     <div className="mx-4 mb-3 rounded-2xl border border-zinc-900 bg-zinc-900 p-4 text-white shadow-lg">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="font-bold">Install UNAP Rider</p>
+          <p className="font-bold">Install Unapologetic Rider</p>
           <p className="mt-1 text-sm text-zinc-300">
             Put the app on your home screen for one-tap access while you are on
             the road.
