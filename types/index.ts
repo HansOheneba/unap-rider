@@ -67,6 +67,8 @@ export type RiderAssignment = {
   city: string;
   district: string | null;
   landmark: string | null;
+  /** Optional Google Maps link for turn-by-turn navigation. */
+  mapsUrl: string | null;
   region: string;
   items: {
     productName: string;

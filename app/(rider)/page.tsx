@@ -79,20 +79,6 @@ export default function TodayPage() {
           <OnMyWayBanner packageCount={runState.pickedUpCount} />
         ) : null}
 
-        {!runLoading && runState?.phase === "pickup" && runState.assignedCount > 0 ? (
-          <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-violet-800">
-            <strong>Step 1:</strong> Open each order and confirm pickup when you
-            have the package.
-          </div>
-        ) : null}
-
-        {!runLoading && runState?.phase === "delivering" ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800">
-            <strong>Step 3:</strong> At each stop, slide to confirm delivery or
-            mark as returned.
-          </div>
-        ) : null}
-
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="h-auto w-full justify-start gap-2 overflow-x-auto rounded-none bg-transparent p-0">
             <TabsTrigger value="assigned" className={tabClass}>

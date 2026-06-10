@@ -17,6 +17,7 @@ export type MockOrder = {
   city: string;
   district: string | null;
   landmark: string | null;
+  mapsUrl?: string | null;
   region: string;
   items: {
     productName: string;
@@ -248,6 +249,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "East Legon",
     landmark: "Opposite Melcom",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=14+Boundary+Road%2C+East+Legon%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {
@@ -278,6 +281,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Airport",
     landmark: "Near Airport Shell",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Airport+Residential+Area%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {
@@ -314,6 +319,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Cantonments",
     landmark: "Behind 37 Military Hospital",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=22+Giffard+Road%2C+Cantonments%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {

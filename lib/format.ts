@@ -92,3 +92,7 @@ export function whatsAppUrl(phone: string): string {
 export function telUrl(phone: string): string {
   return `tel:${normalizePhone(phone)}`;
 }
+
+export function googleMapsSearchUrl(query: string): string {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}

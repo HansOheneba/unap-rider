@@ -9,6 +9,7 @@ import {
   Copy,
   MapPin,
   MessageCircle,
+  Navigation,
   Phone,
 } from "lucide-react";
 import { useAssignment } from "@/lib/hooks/useAssignments";
@@ -146,6 +147,22 @@ export default function AssignmentDetailPage() {
               <Copy className="h-4 w-4" />
             </Button>
           </div>
+
+          {data.mapsUrl ? (
+            <Button
+              className="mt-3 h-12 w-full rounded-xl bg-[#4285F4] text-white hover:bg-[#3367D6]"
+              asChild
+            >
+              <a
+                href={data.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Navigation className="h-5 w-5" />
+                Open in Google Maps
+              </a>
+            </Button>
+          ) : null}
         </div>
 
         <div className="rounded-2xl bg-zinc-100 p-4">

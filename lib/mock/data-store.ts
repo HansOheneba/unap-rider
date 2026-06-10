@@ -15,31 +15,26 @@ import {
   assertRiderEligible,
   isAccraInhouseDelivery,
 } from "@/lib/constants/delivery-scope";
+import { buildFreshMockStore } from "./create-initial-store";
 import {
-  seedDeliveryEvents,
-  seedOrders,
-  seedRiders,
-  type MockOrder,
-} from "./seed";
+  getPersistedMockStore,
+  savePersistedMockStore,
+} from "./mock-persist-store";
+import type { MockStoreData } from "./create-initial-store";
+import { seedOrders, type MockOrder } from "./seed";
 
-type Store = {
-  riders: RiderSession[];
-  orders: MockOrder[];
-  deliveryEvents: DeliveryEvent[];
-};
+const seedMapsUrlByOrderId = new Map(
+  seedOrders
+    .filter((o) => o.mapsUrl)
+    .map((o) => [o.id, o.mapsUrl!] as const),
+);
 
-let store: Store = {
-  riders: seedRiders.map((r) => ({ ...r })),
-  orders: seedOrders.map((o) => ({ ...o, items: [...o.items] })),
-  deliveryEvents: [...seedDeliveryEvents],
-};
+function readStore(): MockStoreData {
+  return getPersistedMockStore();
+}
 
-function resetStore() {
-  store = {
-    riders: seedRiders.map((r) => ({ ...r })),
-    orders: seedOrders.map((o) => ({ ...o, items: [...o.items] })),
-    deliveryEvents: [...seedDeliveryEvents],
-  };
+function writeStore(store: MockStoreData): void {
+  savePersistedMockStore(store);
 }
 
 function deriveStatus(order: MockOrder, events: DeliveryEvent[]): AssignmentStatus {
@@ -52,7 +47,7 @@ function deriveStatus(order: MockOrder, events: DeliveryEvent[]): AssignmentStat
   return "assigned";
 }
 
-function toAssignment(order: MockOrder): RiderAssignment {
+function toAssignment(store: MockStoreData, order: MockOrder): RiderAssignment {
   const events = store.deliveryEvents
     .filter((e) => e.orderId === order.id)
     .sort((a, b) => new Date(a.at).getTime() - new Date(b.at).getTime());
@@ -71,6 +66,7 @@ function toAssignment(order: MockOrder): RiderAssignment {
     city: order.city,
     district: order.district,
     landmark: order.landmark,
+    mapsUrl: order.mapsUrl ?? seedMapsUrlByOrderId.get(order.id) ?? null,
     region: order.region,
     items: order.items,
     itemCount: order.items.reduce((s, i) => s + i.quantity, 0),
@@ -85,7 +81,7 @@ function toAssignment(order: MockOrder): RiderAssignment {
   };
 }
 
-function riderOrders(riderId: string): MockOrder[] {
+function riderOrders(store: MockStoreData, riderId: string): MockOrder[] {
   return store.orders.filter(
     (o) =>
       o.riderId === riderId &&
@@ -106,6 +102,7 @@ function nextEventId() {
 }
 
 function appendEvent(
+  store: MockStoreData,
   orderId: string,
   rider: RiderSession,
   type: DeliveryEventType,
@@ -121,26 +118,31 @@ function appendEvent(
     at: now(),
   };
   store.deliveryEvents.push(event);
+  writeStore(store);
   return event;
 }
 
 export const mockStore = {
-  reset: resetStore,
+  reset: () => {
+    writeStore(buildFreshMockStore());
+  },
 
   findRiderByPhone(phone: string): RiderSession | null {
-    return (
-      store.riders.find((r) => phonesMatch(r.phone, phone)) ?? null
-    );
+    const store = readStore();
+    return store.riders.find((r) => phonesMatch(r.phone, phone)) ?? null;
   },
 
   getRider(id: string): RiderSession | null {
+    const store = readStore();
     return store.riders.find((r) => r.id === id) ?? null;
   },
 
   updateRiderStatus(id: string, status: RiderSession["status"]) {
+    const store = readStore();
     const rider = store.riders.find((r) => r.id === id);
     if (!rider) throw new Error("Rider not found");
     rider.status = status;
+    writeStore(store);
     return rider;
   },
 
@@ -148,7 +150,8 @@ export const mockStore = {
     riderId: string,
     opts?: { status?: AssignmentStatus | AssignmentStatus[]; date?: "today" | "all" },
   ): RiderAssignment[] {
-    let list = riderOrders(riderId).map(toAssignment);
+    const store = readStore();
+    let list = riderOrders(store, riderId).map((o) => toAssignment(store, o));
 
     if (opts?.status) {
       const statuses = Array.isArray(opts.status) ? opts.status : [opts.status];
@@ -166,11 +169,12 @@ export const mockStore = {
   },
 
   getAssignment(riderId: string, orderId: string): AssignmentDetail | null {
+    const store = readStore();
     const order = store.orders.find(
       (o) => o.id === orderId && o.riderId === riderId,
     );
     if (!order) return null;
-    const assignment = toAssignment(order);
+    const assignment = toAssignment(store, order);
     const events = store.deliveryEvents
       .filter((e) => e.orderId === orderId)
       .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
@@ -178,7 +182,8 @@ export const mockStore = {
   },
 
   getRunState(riderId: string): RiderRunState {
-    const all = riderOrders(riderId).map(toAssignment);
+    const store = readStore();
+    const all = riderOrders(store, riderId).map((o) => toAssignment(store, o));
     const active = all.filter((a) =>
       ["assigned", "picked_up", "out_for_delivery"].includes(a.status),
     );
@@ -215,18 +220,25 @@ export const mockStore = {
   },
 
   markOnMyWay(riderId: string): { updated: number } {
+    const store = readStore();
     const rider = store.riders.find((r) => r.id === riderId);
     if (!rider) throw new Error("Rider not found");
 
-    const picked = riderOrders(riderId)
-      .map((o) => ({ order: o, status: deriveStatus(o, store.deliveryEvents.filter((e) => e.orderId === o.id)) }))
+    const picked = riderOrders(store, riderId)
+      .map((o) => ({
+        order: o,
+        status: deriveStatus(
+          o,
+          store.deliveryEvents.filter((e) => e.orderId === o.id),
+        ),
+      }))
       .filter((x) => x.status === "picked_up");
 
     if (picked.length === 0) {
       throw new Error("No packages ready to depart");
     }
 
-    const hasAssigned = riderOrders(riderId).some((o) => {
+    const hasAssigned = riderOrders(store, riderId).some((o) => {
       const events = store.deliveryEvents.filter((e) => e.orderId === o.id);
       return deriveStatus(o, events) === "assigned";
     });
@@ -235,16 +247,18 @@ export const mockStore = {
     }
 
     for (const { order } of picked) {
-      appendEvent(order.id, rider, "out_for_delivery", "Rider is on the way");
+      appendEvent(store, order.id, rider, "out_for_delivery", "Rider is on the way");
       order.outForDeliveryAt = now();
     }
 
     rider.status = "on_delivery";
+    writeStore(store);
     return { updated: picked.length };
   },
 
   getStats(riderId: string): RiderStats {
-    const all = riderOrders(riderId).map(toAssignment);
+    const store = readStore();
+    const all = riderOrders(store, riderId).map((o) => toAssignment(store, o));
     const today = all.filter((a) =>
       ["assigned", "picked_up", "out_for_delivery"].includes(a.status),
     );
@@ -262,8 +276,9 @@ export const mockStore = {
     page: number,
     pageSize = PAGE_SIZE,
   ): Paginated<RiderAssignment> {
-    const done = riderOrders(riderId)
-      .map(toAssignment)
+    const store = readStore();
+    const done = riderOrders(store, riderId)
+      .map((o) => toAssignment(store, o))
       .filter((a) => a.status === "delivered" || a.status === "failed")
       .sort(
         (a, b) =>
@@ -288,6 +303,7 @@ export const mockStore = {
     type: DeliveryEventType,
     opts?: { note?: string; reason?: string },
   ): AssignmentDetail {
+    const store = readStore();
     const order = store.orders.find(
       (o) => o.id === orderId && o.riderId === riderId,
     );
@@ -317,7 +333,7 @@ export const mockStore = {
       throw new Error(`Cannot transition from ${current} to ${type}`);
     }
 
-    appendEvent(orderId, rider, type, opts?.note);
+    appendEvent(store, orderId, rider, type, opts?.note);
 
     if (type === "picked_up") order.pickedUpAt = now();
     if (type === "out_for_delivery") order.outForDeliveryAt = now();
@@ -326,6 +342,8 @@ export const mockStore = {
       order.failedAt = now();
       order.failureReason = opts?.reason ?? "other";
     }
+
+    writeStore(store);
 
     const detail = this.getAssignment(riderId, orderId);
     if (!detail) throw new Error("Assignment not found");
