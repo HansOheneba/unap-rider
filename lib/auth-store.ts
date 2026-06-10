@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { RiderSession } from "@/types";
 import { clearToken, setToken } from "@/lib/api/token";
+import { clearMockPersistStorage } from "@/lib/mock/mock-persist-store";
 
 function setAuthCookie(token: string) {
   document.cookie = `unap-rider-token=${encodeURIComponent(token)}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
@@ -43,7 +44,9 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         clearToken();
         clearAuthCookie();
+        clearMockPersistStorage();
         set({ rider: null, token: null });
+        useAuthStore.persist.clearStorage();
       },
     }),
     {

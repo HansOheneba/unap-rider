@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Bike, LogOut, MapPinned } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
@@ -17,6 +18,7 @@ import { statusLabel } from "@/lib/format";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { rider, hydrated } = useRiderAuth();
   const setRider = useAuthStore((s) => s.setRider);
   const logoutStore = useAuthStore((s) => s.logout);
@@ -53,6 +55,7 @@ export default function ProfilePage() {
     } catch {
       /* mock */
     }
+    queryClient.clear();
     logoutStore();
     toast.success("Signed out.");
     router.replace("/login");

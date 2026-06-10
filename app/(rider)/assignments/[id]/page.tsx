@@ -9,12 +9,12 @@ import {
   ChevronRight,
   Copy,
   MapPin,
-  MessageCircle,
   Navigation,
   Phone,
 } from "lucide-react";
 import { useAssignment } from "@/lib/hooks/useAssignments";
 import { AssignmentActions } from "@/components/assignments/assignment-actions";
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { DeliveryProgress } from "@/components/assignments/delivery-progress";
 import { DeliveryTimeline } from "@/components/assignments/delivery-timeline";
 import { AssignmentStatusBadge } from "@/components/shared/status-badge";
@@ -144,15 +144,16 @@ export default function AssignmentDetailPage() {
             <div className="flex shrink-0 gap-1.5">
               <Button
                 size="icon"
-                className="h-8 w-8 rounded-full bg-[#E8192C] hover:bg-[#c91526]"
+                className="h-8 w-8 rounded-full bg-[#25D366] text-white hover:bg-[#20BD5A]"
                 asChild
               >
                 <a
                   href={whatsAppUrl(wa)}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="WhatsApp customer"
                 >
-                  <MessageCircle className="h-4 w-4" />
+                  <WhatsAppIcon />
                 </a>
               </Button>
               <Button

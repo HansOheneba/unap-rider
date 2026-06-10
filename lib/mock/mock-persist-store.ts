@@ -101,3 +101,11 @@ export function savePersistedMockStore(store: MockStoreData): void {
   if (typeof window === "undefined") return;
   useMockPersistStore.getState().setStore(store);
 }
+
+/** Wipe mock DB so the next login starts a fresh assigned-only run. */
+export function clearMockPersistStorage(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(STORAGE_KEY);
+  useMockPersistStore.persist.clearStorage();
+  useMockPersistStore.setState({ store: null, hydrated: true });
+}
