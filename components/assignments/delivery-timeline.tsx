@@ -10,35 +10,37 @@ export function DeliveryTimeline({ events }: { events: DeliveryEvent[] }) {
   );
 
   return (
-    <Card>
-      <CardTitle className="px-4 pt-4">Timeline</CardTitle>
-      <CardContent className="space-y-0 p-4">
+    <Card className="gap-0 py-0 shadow-sm ring-1 ring-zinc-100">
+      <CardTitle className="section-label px-3 pb-0 pt-2.5">Activity</CardTitle>
+      <CardContent className="space-y-0 p-3 pt-2">
         {sorted.map((event, i) => {
           const theme = eventTheme[event.type];
           const Icon = theme.icon;
 
           return (
-            <div key={event.id} className="flex gap-3">
+            <div key={event.id} className="flex gap-2">
               <div className="flex flex-col items-center">
                 <div
                   className={cn(
-                    "flex h-9 w-9 items-center justify-center rounded-full text-white shadow-sm",
+                    "flex h-6 w-6 items-center justify-center rounded-full text-white",
                     theme.dot,
                   )}
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3 w-3" />
                 </div>
                 {i < sorted.length - 1 ? (
-                  <div className="my-1 w-0.5 flex-1 bg-zinc-200" />
+                  <div className="my-0.5 w-px flex-1 bg-zinc-200" />
                 ) : null}
               </div>
-              <div className="pb-5">
-                <p className="font-medium">{eventTypeLabel(event.type)}</p>
+              <div className="pb-3">
+                <p className="text-[length:var(--text-caption)] font-medium">
+                  {eventTypeLabel(event.type)}
+                </p>
                 <small>{formatDateTime(event.at)}</small>
                 {event.note ? (
-                  <p className="mt-1 rounded-lg bg-zinc-50 px-2 py-1 text-zinc-600">
+                  <small className="mt-0.5 block text-zinc-500">
                     {event.note}
-                  </p>
+                  </small>
                 ) : null}
               </div>
             </div>

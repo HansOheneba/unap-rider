@@ -92,6 +92,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Ridge",
     landmark: "Near British Council",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=14+Jungle+Road%2C+Ridge%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {
@@ -122,6 +124,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Osu",
     landmark: "Behind Republic Bar",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=12+Oxford+Street%2C+Osu%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {
@@ -381,6 +385,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Spintex",
     landmark: "Ground floor pickup point",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Palace+Mall%2C+Spintex+Road%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {
@@ -478,6 +484,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Dansoman",
     landmark: "Near Dansoman Market",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Dansoman+Estates%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {
@@ -509,6 +517,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Osu",
     landmark: "Near Danquah Circle",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Ring+Road+Central%2C+Osu%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {
@@ -539,6 +549,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Dzorwulu",
     landmark: "Opposite A&C Mall gate",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Dzorwulu%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {
@@ -569,6 +581,8 @@ export const seedOrders: MockOrder[] = [
     city: "Accra",
     district: "Ashaley Botwe",
     landmark: "Near Pentecost junction",
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Ashaley+Botwe%2C+Accra%2C+Ghana",
     region: "Greater Accra",
     items: [
       {

@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowLeft,
+  ChevronRight,
   Copy,
   MapPin,
   MessageCircle,
@@ -19,16 +20,42 @@ import { DeliveryTimeline } from "@/components/assignments/delivery-timeline";
 import { AssignmentStatusBadge } from "@/components/shared/status-badge";
 import { getStatusTheme } from "@/lib/status-theme";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AssignmentDetailSkeleton } from "@/components/skeletons/shipment-skeletons";
 import { formatDeliveryLocation, telUrl, whatsAppUrl } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
-function SpecRow({ label, value }: { label: string; value: string }) {
+function ListRow({
+  label,
+  value,
+  className,
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <div className="flex items-center justify-between py-2.5">
-      <small>{label}</small>
-      <p className="font-medium">{value}</p>
+    <div
+      className={cn(
+        "flex items-center justify-between gap-3 px-3 py-2",
+        className,
+      )}
+    >
+      <small className="shrink-0 text-zinc-500">{label}</small>
+      <p className="truncate text-right font-medium">{value}</p>
     </div>
   );
+}
+
+function GroupCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-zinc-100">
+      {children}
+    </div>
+  );
+}
+
+function RowDivider() {
+  return <div className="mx-3 border-t border-zinc-100" />;
 }
 
 export default function AssignmentDetailPage() {
@@ -50,13 +77,7 @@ export default function AssignmentDetailPage() {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4 bg-zinc-100 p-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-40 w-full rounded-2xl" />
-        <Skeleton className="h-60 w-full rounded-2xl" />
-      </div>
-    );
+    return <AssignmentDetailSkeleton />;
   }
 
   if (error || !data) {
@@ -73,17 +94,15 @@ export default function AssignmentDetailPage() {
   const theme = getStatusTheme(data.status);
   const phone = data.customerPhone;
   const wa = data.customerWhatsapp ?? data.customerPhone;
-  const primaryItem = data.items[0]?.productName ?? "Order";
-
   return (
     <>
-      <div className="on-dark bg-zinc-900 px-4 pb-4 pt-4">
-        <div className="flex items-center gap-3">
+      <div className="on-dark bg-zinc-900 px-3 pb-3 pt-3">
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
             asChild
-            className="text-white hover:bg-white/10"
+            className="h-9 w-9 text-white hover:bg-white/10"
           >
             <Link href="/" aria-label="Back">
               <ArrowLeft className="h-5 w-5" />
@@ -91,128 +110,153 @@ export default function AssignmentDetailPage() {
           </Button>
           <div className="min-w-0 flex-1">
             <small>{data.trackingNumber}</small>
-            <h2 className="truncate">{primaryItem}</h2>
+            <h2 className="line-clamp-2 text-[length:var(--text-heading)] leading-snug">
+              {data.address}
+            </h2>
           </div>
-          <AssignmentStatusBadge status={data.status} />
+          <AssignmentStatusBadge status={data.status} size="sm" />
+        </div>
+        <div className="mt-2.5">
+          <DeliveryProgress status={data.status} />
         </div>
       </div>
 
-      <div className="space-y-4 bg-zinc-100 px-4 py-4 pb-40">
-        <DeliveryProgress
-          status={data.status}
-          customerName={data.customerName}
-          address={fullAddress}
-        />
+      <div className="space-y-3 bg-zinc-100 px-3 py-3 pb-28">
+        <div className="rounded-xl bg-white px-3 py-2.5 shadow-sm ring-1 ring-zinc-100">
+          <AssignmentStatusBadge status={data.status} size="sm" />
+          <small className="mt-1.5 block text-zinc-500">
+            {data.status === "assigned"
+              ? "Confirm pickup when you have the package."
+              : data.status === "picked_up"
+                ? "Head back to shipments when ready to leave."
+                : data.status === "out_for_delivery"
+                  ? "Slide to confirm when the customer receives it."
+                  : "This stop is complete."}
+          </small>
+        </div>
 
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-100">
-          <div className="flex items-center justify-between">
-            <div>
+        <GroupCard>
+          <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+            <div className="min-w-0">
               <small>Deliver to</small>
-              <h3>{data.customerName}</h3>
+              <h3 className="truncate">{data.customerName}</h3>
             </div>
-            <div className="flex gap-2">
+            <div className="flex shrink-0 gap-1.5">
               <Button
                 size="icon"
-                className="rounded-full bg-[#E8192C] hover:bg-[#c91526]"
+                className="h-8 w-8 rounded-full bg-[#E8192C] hover:bg-[#c91526]"
                 asChild
               >
-                <a href={whatsAppUrl(wa)} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-5 w-5" />
+                <a
+                  href={whatsAppUrl(wa)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="h-4 w-4" />
                 </a>
               </Button>
               <Button
                 size="icon"
                 variant="outline"
-                className="rounded-full"
+                className="h-8 w-8 rounded-full"
                 asChild
               >
                 <a href={telUrl(phone)}>
-                  <Phone className="h-5 w-5" />
+                  <Phone className="h-4 w-4" />
                 </a>
               </Button>
             </div>
           </div>
 
-          <div className="mt-3 flex items-start gap-2 rounded-xl bg-zinc-50 p-3">
-            <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#E8192C]" />
+          <RowDivider />
+
+          <div className="flex items-start gap-2 px-3 py-2">
+            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#E8192C]" />
             <div className="min-w-0 flex-1">
-              <p className="font-medium leading-snug">{fullAddress}</p>
+              <p className="text-[length:var(--text-caption)] font-medium leading-snug">
+                {fullAddress}
+              </p>
               {data.landmark ? (
-                <p className="mt-1 font-medium text-amber-700">
-                  Landmark: {data.landmark}
-                </p>
+                <small className="mt-0.5 block text-amber-700">
+                  {data.landmark}
+                </small>
               ) : null}
             </div>
-            <Button variant="ghost" size="sm" onClick={copyAddress}>
-              <Copy className="h-4 w-4" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={copyAddress}
+            >
+              <Copy className="h-3.5 w-3.5" />
             </Button>
           </div>
 
           {data.mapsUrl ? (
-            <Button
-              className="mt-3 h-12 w-full rounded-xl bg-[#4285F4] text-white hover:bg-[#3367D6]"
-              asChild
-            >
+            <>
+              <RowDivider />
               <a
                 href={data.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2.5 text-[#007AFF] active:bg-zinc-50"
               >
-                <Navigation className="h-5 w-5" />
-                Open in Google Maps
+                <Navigation className="h-4 w-4 shrink-0" />
+                <span className="flex-1 font-medium">Open in Google Maps</span>
+                <ChevronRight className="h-4 w-4 shrink-0 opacity-50" />
               </a>
-            </Button>
+            </>
           ) : null}
-        </div>
+        </GroupCard>
 
-        <div className="rounded-2xl bg-zinc-100 p-4">
-          <p className="section-label mb-2">Shipment details</p>
-          <div className="divide-y divide-zinc-200">
-            <SpecRow label="Items" value={`${data.itemCount}`} />
-            <SpecRow
-              label="Size"
-              value={
-                data.items
-                  .map((i) => i.size)
-                  .filter(Boolean)
-                  .join(", ") || "N/A"
-              }
-            />
-            <SpecRow label="Status" value={theme.listLabel} />
-            <SpecRow label="Payment" value="Paid" />
-          </div>
-        </div>
-
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-100">
-          <p className="section-label mb-2">Package contents</p>
-          <div className="divide-y divide-zinc-100">
-            {data.items.map((item, i) => (
-              <div key={i} className="flex justify-between py-3">
-                <div>
-                  <p className="font-medium">{item.productName}</p>
+        <GroupCard>
+          <p className="section-label px-3 pb-1 pt-2.5">Shipment</p>
+          <ListRow label="Items" value={`${data.itemCount}`} />
+          <RowDivider />
+          <ListRow
+            label="Size"
+            value={
+              data.items
+                .map((i) => i.size)
+                .filter(Boolean)
+                .join(", ") || "N/A"
+            }
+          />
+          <RowDivider />
+          <ListRow label="Status" value={theme.listLabel} />
+          <RowDivider />
+          <ListRow label="Payment" value="Paid" />
+          {data.items.map((item, i) => (
+            <React.Fragment key={i}>
+              <RowDivider />
+              <div className="flex items-center justify-between gap-3 px-3 py-2">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{item.productName}</p>
                   <small>
                     {[item.size, item.colorName].filter(Boolean).join(" · ")}
                   </small>
                 </div>
-                <p className="font-medium">x{item.quantity}</p>
+                <p className="shrink-0 font-medium">x{item.quantity}</p>
               </div>
-            ))}
-          </div>
-        </div>
+            </React.Fragment>
+          ))}
+        </GroupCard>
 
         {data.customerNote ? (
-          <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4">
+          <div className="rounded-xl border border-sky-200 bg-sky-50 px-3 py-2.5">
             <small className="font-medium text-sky-700">Customer note</small>
-            <p className="mt-1 font-medium text-sky-900">{data.customerNote}</p>
+            <p className="mt-0.5 text-[length:var(--text-caption)] font-medium text-sky-900">
+              {data.customerNote}
+            </p>
           </div>
         ) : null}
 
         {data.internalNote ? (
-          <div className="rounded-2xl border border-violet-200 bg-violet-50 p-4">
-            <small className="font-medium text-violet-700">
-              Internal rider note
-            </small>
-            <p className="mt-1 font-medium text-violet-900">{data.internalNote}</p>
+          <div className="rounded-xl border border-violet-200 bg-violet-50 px-3 py-2.5">
+            <small className="font-medium text-violet-700">Rider note</small>
+            <p className="mt-0.5 text-[length:var(--text-caption)] font-medium text-violet-900">
+              {data.internalNote}
+            </p>
           </div>
         ) : null}
 

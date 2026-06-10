@@ -13,6 +13,13 @@ const KWAME_FRESH_ORDER_IDS = [
   "ORD-2026-0054",
   "ORD-2026-0053",
   "ORD-2026-0052",
+  "ORD-2026-0051",
+  "ORD-2026-0048",
+  "ORD-2026-0049",
+  "ORD-2026-0045",
+  "ORD-2026-0038",
+  "ORD-2026-0035",
+  "ORD-2026-0030",
 ] as const;
 
 function riderName(riderId: string): string {

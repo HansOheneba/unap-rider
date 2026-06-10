@@ -163,9 +163,19 @@ export const mockStore = {
       list = list.filter((a) => active.includes(a.status));
     }
 
-    return list.sort(
-      (a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime(),
-    );
+    const statusRank: Partial<Record<AssignmentStatus, number>> = {
+      assigned: 0,
+      picked_up: 1,
+    };
+
+    return list.sort((a, b) => {
+      const rankA = statusRank[a.status] ?? 0;
+      const rankB = statusRank[b.status] ?? 0;
+      if (rankA !== rankB) return rankA - rankB;
+      return (
+        new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime()
+      );
+    });
   },
 
   getAssignment(riderId: string, orderId: string): AssignmentDetail | null {

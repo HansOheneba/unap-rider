@@ -7,14 +7,17 @@ export function AssignmentStatusBadge({
   size = "default",
 }: {
   status: AssignmentStatus;
-  size?: "default" | "lg";
+  size?: "sm" | "default" | "lg";
 }) {
   const theme = getStatusTheme(status);
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-1 text-[length:var(--text-caption)] font-medium",
+        "inline-flex shrink-0 items-center rounded-full font-normal",
+        size === "sm"
+          ? "px-2 py-0.5 text-[0.6875rem]"
+          : "px-2.5 py-1 text-[length:var(--text-caption)]",
         theme.badge,
         size === "lg" && "px-3 py-1.5",
       )}

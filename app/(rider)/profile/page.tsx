@@ -12,11 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { ProfileSkeleton } from "@/components/skeletons/shipment-skeletons";
 import { statusLabel } from "@/lib/format";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { rider } = useRiderAuth();
+  const { rider, hydrated } = useRiderAuth();
   const setRider = useAuthStore((s) => s.setRider);
   const logoutStore = useAuthStore((s) => s.logout);
   const [onDuty, setOnDuty] = React.useState(
@@ -57,7 +58,9 @@ export default function ProfilePage() {
     router.replace("/login");
   };
 
-  if (!rider) return null;
+  if (!hydrated || !rider) {
+    return <ProfileSkeleton />;
+  }
 
   return (
     <div className="px-4 py-6">

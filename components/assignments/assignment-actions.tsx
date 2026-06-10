@@ -87,31 +87,37 @@ export function AssignmentActions({ orderId, status }: Props) {
 
   return (
     <>
-      <div className="fixed inset-x-0 bottom-16 z-40 border-t border-zinc-200 bg-white p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] safe-bottom">
-        <div className="mx-auto max-w-lg space-y-3">
+      <div className="fixed inset-x-0 bottom-16 z-40 border-t border-zinc-200 bg-white/95 px-3 py-2.5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-sm safe-bottom">
+        <div className="mx-auto max-w-lg space-y-2">
           {status === "assigned" ? (
             <Button
-              size="lg"
-              className="w-full bg-[#E8192C] hover:bg-[#c91526]"
+              className="h-11 w-full bg-[#E8192C] hover:bg-[#c91526]"
               disabled={loading}
               onClick={handlePickup}
             >
-              <PackageCheck className="h-5 w-5" />
+              <PackageCheck className="h-4 w-4" />
               Confirm pickup
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-4 w-4" />
             </Button>
           ) : null}
 
           {status === "picked_up" ? (
-            <div className="rounded-2xl border border-sky-200 bg-sky-50 p-4 text-center">
-              <p className="font-medium text-sky-900">
-                Package loaded on your bike
-              </p>
-              <p className="mt-1 text-sky-700">
-                Pick up any remaining orders, then go back to shipments and tap
-                <strong> I&apos;m on my way</strong> to notify customers.
-              </p>
-              <Button variant="outline" className="mt-3 w-full" asChild>
+            <div className="space-y-2.5">
+              <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-zinc-100">
+                <p className="font-normal text-zinc-600">
+                  <span className="text-sky-600">Picked up</span> · Package
+                  loaded
+                </p>
+                <p className="mt-0.5 text-[length:var(--text-caption)] font-normal text-zinc-400">
+                  Pick up any remaining orders, then go to shipments and tap{" "}
+                  I&apos;m on my way.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                className="h-11 w-full border-zinc-200 font-normal text-zinc-700 hover:bg-zinc-50"
+                asChild
+              >
                 <Link href="/">Back to shipments</Link>
               </Button>
             </div>

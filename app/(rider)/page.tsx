@@ -3,54 +3,16 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { useRiderAuth } from "@/lib/hooks/useRiderAuth";
-import {
-  useAssignments,
-  useRunState,
-} from "@/lib/hooks/useAssignments";
-import { AssignmentCard } from "@/components/assignments/assignment-card";
+import { useRunState } from "@/lib/hooks/useAssignments";
+import { ShipmentList } from "@/components/assignments/shipment-list";
 import { OnMyWayBanner } from "@/components/assignments/on-my-way-banner";
 import { PageHeader } from "@/components/layout/page-header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ShipmentListSkeleton,
+  TabsSkeleton,
+} from "@/components/skeletons/shipment-skeletons";
 import { Skeleton } from "@/components/ui/skeleton";
-
-function ShipmentList({
-  statuses,
-}: {
-  statuses: (
-    | "assigned"
-    | "picked_up"
-    | "out_for_delivery"
-    | "delivered"
-    | "failed"
-  )[];
-}) {
-  const { data, isLoading } = useAssignments(statuses);
-
-  if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <Skeleton className="h-32 w-full rounded-2xl" />
-        <Skeleton className="h-32 w-full rounded-2xl" />
-      </div>
-    );
-  }
-
-  if (!data?.length) {
-    return (
-      <div className="rounded-2xl border border-dashed border-zinc-200 bg-white px-4 py-12 text-center">
-        <p className="text-zinc-500">No shipments here.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      {data.map((a) => (
-        <AssignmentCard key={a.id} assignment={a} />
-      ))}
-    </div>
-  );
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const tabClass =
   "rounded-full px-4 py-2 text-zinc-600 data-[state=active]:bg-[#E8192C] data-[state=active]:text-white data-[state=active]:shadow-md";
@@ -67,6 +29,22 @@ export default function TodayPage() {
     else if (runState.phase === "pickup") setTab("assigned");
   }, [runState?.phase]);
 
+  if (runLoading) {
+    return (
+      <div className="min-h-screen bg-zinc-100">
+        <PageHeader
+          title="My Shipments"
+          subtitle={`${rider?.firstName ?? "Rider"} · Accra runs · ${format(new Date(), "EEE, MMM d")}`}
+        />
+        <div className="space-y-3 px-3 py-3">
+          <Skeleton className="h-14 w-full rounded-xl" />
+          <TabsSkeleton />
+          <ShipmentListSkeleton rows={5} showFilter />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-zinc-100">
       <PageHeader
@@ -74,8 +52,8 @@ export default function TodayPage() {
         subtitle={`${rider?.firstName ?? "Rider"} · Accra runs · ${format(new Date(), "EEE, MMM d")}`}
       />
 
-      <div className="space-y-4 px-4 py-4">
-        {!runLoading && runState?.canDepart ? (
+      <div className="space-y-3 px-3 py-3">
+        {runState?.canDepart ? (
           <OnMyWayBanner packageCount={runState.pickedUpCount} />
         ) : null}
 
@@ -102,14 +80,23 @@ export default function TodayPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="assigned" className="mt-4">
-            <ShipmentList statuses={["assigned", "picked_up"]} />
+          <TabsContent value="assigned" className="mt-3">
+            <ShipmentList
+              title="To pick up"
+              statuses={["assigned", "picked_up"]}
+            />
           </TabsContent>
-          <TabsContent value="delivering" className="mt-4">
-            <ShipmentList statuses={["out_for_delivery"]} />
+          <TabsContent value="delivering" className="mt-3">
+            <ShipmentList
+              title="Delivering"
+              statuses={["out_for_delivery"]}
+            />
           </TabsContent>
-          <TabsContent value="completed" className="mt-4">
-            <ShipmentList statuses={["delivered", "failed"]} />
+          <TabsContent value="completed" className="mt-3">
+            <ShipmentList
+              title="Completed"
+              statuses={["delivered", "failed"]}
+            />
           </TabsContent>
         </Tabs>
       </div>

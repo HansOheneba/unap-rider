@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useHistory } from "@/lib/hooks/useAssignments";
 import { AssignmentCard } from "@/components/assignments/assignment-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ShipmentListSkeleton } from "@/components/skeletons/shipment-skeletons";
 import {
   Pagination,
   PaginationContent,
@@ -25,10 +25,7 @@ export default function HistoryPage() {
       </header>
 
       {isLoading ? (
-        <div className="space-y-3">
-          <Skeleton className="h-28 w-full" />
-          <Skeleton className="h-28 w-full" />
-        </div>
+        <ShipmentListSkeleton rows={6} />
       ) : !data?.data.length ? (
         <div className="rounded-xl border border-dashed border-zinc-200 bg-white px-4 py-10 text-center">
           <p className="text-zinc-500">No completed deliveries yet.</p>

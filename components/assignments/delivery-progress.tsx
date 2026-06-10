@@ -3,11 +3,9 @@ import type { AssignmentStatus } from "@/types";
 
 type Props = {
   status: AssignmentStatus;
-  customerName: string;
-  address: string;
 };
 
-export function DeliveryProgress({ status, customerName, address }: Props) {
+export function DeliveryProgress({ status }: Props) {
   const progress =
     status === "assigned"
       ? 0
@@ -18,26 +16,19 @@ export function DeliveryProgress({ status, customerName, address }: Props) {
           : 100;
 
   return (
-    <div className="rounded-2xl bg-zinc-100 p-4">
-      <div className="section-label mb-3 flex items-center justify-between">
-        <span>Warehouse</span>
-        <span>{customerName}</span>
+    <div className="flex items-center gap-2 px-1">
+      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white">
+        <Box className="h-3 w-3" />
       </div>
-      <div className="relative flex items-center">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-900 text-white">
-          <Box className="h-4 w-4" />
-        </div>
-        <div className="relative mx-2 h-1 flex-1 overflow-hidden rounded-full bg-zinc-300">
-          <div
-            className="absolute inset-y-0 left-0 rounded-full bg-[#E8192C] transition-all duration-500"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#E8192C] text-white">
-          <MapPin className="h-4 w-4" />
-        </div>
+      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-white/25">
+        <div
+          className="absolute inset-y-0 left-0 rounded-full bg-white transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
       </div>
-      <p className="mt-3 truncate font-medium text-zinc-700">{address}</p>
+      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-zinc-900">
+        <MapPin className="h-3 w-3" />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,26 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { AssignmentStatus } from "@/types";
+import type { AssignmentStatus, RiderAssignment } from "@/types";
+
+function sortAssignments(
+  list: RiderAssignment[],
+  statuses?: AssignmentStatus[],
+): RiderAssignment[] {
+  const pickupQueue =
+    statuses?.includes("assigned") && statuses?.includes("picked_up");
+
+  return [...list].sort((a, b) => {
+    if (pickupQueue) {
+      const rank = (s: AssignmentStatus) => (s === "picked_up" ? 1 : 0);
+      const diff = rank(a.status) - rank(b.status);
+      if (diff !== 0) return diff;
+    }
+    return (
+      new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime()
+    );
+  });
+}
 import {
   getAssignment,
   getAssignments,
@@ -50,7 +69,10 @@ export function useAssignments(statuses?: AssignmentStatus[]) {
         isDoneTab ? undefined : { date: "today" },
       );
       if (!statuses?.length) return all;
-      return all.filter((a) => statuses.includes(a.status));
+      return sortAssignments(
+        all.filter((a) => statuses.includes(a.status)),
+        statuses,
+      );
     },
     refetchInterval: 30_000,
   });
