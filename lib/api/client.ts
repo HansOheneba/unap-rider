@@ -43,7 +43,6 @@ export async function apiFetch<T>(
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
-    credentials: "include",
   });
 
   if (res.status === 204) return undefined as T;
