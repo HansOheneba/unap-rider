@@ -15,6 +15,22 @@ export class ApiError extends Error {
   }
 }
 
+/** Every backend response is wrapped as { success, data, errors }. */
+type ApiEnvelope<T> = {
+  success: boolean;
+  data: T;
+  errors?: string[];
+};
+
+function isEnvelope(json: unknown): json is ApiEnvelope<unknown> {
+  return (
+    typeof json === "object" &&
+    json !== null &&
+    "success" in json &&
+    "data" in json
+  );
+}
+
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit,
@@ -30,17 +46,26 @@ export async function apiFetch<T>(
     credentials: "include",
   });
 
+  if (res.status === 204) return undefined as T;
+
+  const json = await res.json().catch(() => null);
+
+  if (isEnvelope(json)) {
+    if (!json.success) {
+      throw new ApiError(json.errors?.[0] ?? `HTTP ${res.status}`, res.status);
+    }
+    return json.data as T;
+  }
+
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
     const message =
-      (err as { error?: string; message?: string }).error ??
-      (err as { message?: string }).message ??
+      (json as { error?: string; message?: string } | null)?.error ??
+      (json as { message?: string } | null)?.message ??
       `HTTP ${res.status}`;
     throw new ApiError(message, res.status);
   }
 
-  if (res.status === 204) return undefined as T;
-  return res.json() as Promise<T>;
+  return json as T;
 }
 
 export async function apiFetchOrMock<T>(

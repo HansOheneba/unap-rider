@@ -35,7 +35,7 @@ export async function verifyOtp(
   otp: string,
 ): Promise<AuthResponse> {
   const normalized = normalizeEmail(email);
-  return apiFetchOrMock(
+  const res = await apiFetchOrMock(
     "/rider/auth/verify-otp",
     () => {
       if (!otp.trim()) throw new Error("Invalid OTP");
@@ -50,6 +50,11 @@ export async function verifyOtp(
       body: JSON.stringify({ email: normalized, otp }),
     },
   );
+  // Backend does not echo email back on RiderSession; carry it from the login step.
+  return {
+    ...res,
+    rider: { ...res.rider, email: res.rider.email || normalized },
+  };
 }
 
 export async function logout(): Promise<void> {
