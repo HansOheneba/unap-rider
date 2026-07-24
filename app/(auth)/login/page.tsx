@@ -9,14 +9,17 @@ import { sendOtp, verifyOtp } from "@/lib/api/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 
-type Step = "phone" | "otp";
+type Step = "email" | "otp";
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,24 +34,25 @@ export default function LoginPage() {
     }
   }, [hydrated, token, rider, router]);
 
-  const [step, setStep] = React.useState<Step>("phone");
-  const [phone, setPhone] = React.useState("");
+  const [step, setStep] = React.useState<Step>("email");
+  const [email, setEmail] = React.useState("");
   const [otp, setOtp] = React.useState("");
   const [loading, setLoading] = React.useState(false);
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone.trim()) {
-      toast.error("Enter your phone number.");
+    const trimmed = email.trim();
+    if (!isValidEmail(trimmed)) {
+      toast.error("Enter a valid email address.");
       return;
     }
     setLoading(true);
     try {
-      await sendOtp(phone.trim());
+      await sendOtp(trimmed);
       toast.success("Code sent.");
       setStep("otp");
     } catch {
-      toast.error("Enter a phone number and try again.");
+      toast.error("Could not send code. Try again.");
     } finally {
       setLoading(false);
     }
@@ -58,7 +62,7 @@ export default function LoginPage() {
     if (value.length < 6) return;
     setLoading(true);
     try {
-      const { token: t, rider: r } = await verifyOtp(phone.trim(), value);
+      const { token: t, rider: r } = await verifyOtp(email.trim(), value);
       setSession(t, r);
       toast.success(`Welcome, ${r.firstName}.`);
       router.push("/");
@@ -95,26 +99,27 @@ export default function LoginPage() {
               className="mb-6 object-contain"
               priority
             />
-            <h1>{step === "phone" ? "Rider sign in" : "Enter your code"}</h1>
+            <h1>{step === "email" ? "Rider sign in" : "Enter your code"}</h1>
             <small className="mt-1 block text-center">
-              {step === "phone"
-                ? "Enter the phone number on your rider account."
-                : `Enter the code we sent to ${phone}`}
+              {step === "email"
+                ? "Enter the email on your rider account."
+                : `Enter the code we sent to ${email}`}
             </small>
           </div>
 
           <div className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-            {step === "phone" ? (
-              <form onSubmit={handlePhoneSubmit} className="space-y-4">
+            {step === "email" ? (
+              <form onSubmit={handleEmailSubmit} className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label htmlFor="phone">Phone number</Label>
+                  <Label htmlFor="email">Email</Label>
                   <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="Mobile number"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    autoComplete="tel"
+                    id="email"
+                    type="email"
+                    inputMode="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
                     autoFocus
                     disabled={loading}
                   />
@@ -144,17 +149,16 @@ export default function LoginPage() {
                   variant="ghost"
                   className="w-full"
                   onClick={() => {
-                    setStep("phone");
+                    setStep("email");
                     setOtp("");
                   }}
                   disabled={loading}
                 >
-                  Use a different number
+                  Use a different email
                 </Button>
               </div>
             )}
           </div>
-
         </div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import { getToken } from "./token";
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8083";
 
 export function useMockApi(): boolean {
-  return process.env.NEXT_PUBLIC_USE_MOCK_API !== "false";
+  return process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
 }
 
 export class ApiError extends Error {
@@ -32,10 +32,11 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new ApiError(
-      (err as { error?: string }).error ?? `HTTP ${res.status}`,
-      res.status,
-    );
+    const message =
+      (err as { error?: string; message?: string }).error ??
+      (err as { message?: string }).message ??
+      `HTTP ${res.status}`;
+    throw new ApiError(message, res.status);
   }
 
   if (res.status === 204) return undefined as T;
@@ -48,9 +49,5 @@ export async function apiFetchOrMock<T>(
   options?: RequestInit,
 ): Promise<T> {
   if (useMockApi()) return mockFn();
-  try {
-    return await apiFetch<T>(path, options);
-  } catch {
-    return mockFn();
-  }
+  return apiFetch<T>(path, options);
 }

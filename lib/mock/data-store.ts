@@ -9,7 +9,6 @@ import type {
   RiderSession,
   RiderStats,
 } from "@/types";
-import { phonesMatch } from "@/lib/format";
 import { PAGE_SIZE } from "@/lib/constants/pagination";
 import {
   assertRiderEligible,
@@ -127,9 +126,13 @@ export const mockStore = {
     writeStore(buildFreshMockStore());
   },
 
-  findRiderByPhone(phone: string): RiderSession | null {
+  findRiderByEmail(email: string): RiderSession | null {
     const store = readStore();
-    return store.riders.find((r) => phonesMatch(r.phone, phone)) ?? null;
+    const normalized = email.trim().toLowerCase();
+    return (
+      store.riders.find((r) => r.email.trim().toLowerCase() === normalized) ??
+      null
+    );
   },
 
   getRider(id: string): RiderSession | null {

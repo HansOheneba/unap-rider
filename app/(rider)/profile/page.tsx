@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { Bike, LogOut, MapPinned } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useRiderAuth } from "@/lib/hooks/useRiderAuth";
-import { logout, updateRiderStatusMock } from "@/lib/api/auth";
+import { logout, updateRiderStatus } from "@/lib/api/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
@@ -38,7 +38,7 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       const next = checked ? "active" : "off_duty";
-      const updated = updateRiderStatusMock(rider.id, next);
+      const updated = await updateRiderStatus(next);
       setRider(updated);
       setOnDuty(checked);
       toast.success(checked ? "You are on duty." : "You are off duty.");
@@ -78,7 +78,8 @@ export default function ProfilePage() {
             <h3>
               {rider.firstName} {rider.lastName}
             </h3>
-            <small>{rider.phone}</small>
+            <small className="block">{rider.email}</small>
+            <small className="block text-zinc-500">{rider.phone}</small>
           </div>
 
           <div className="flex flex-wrap gap-2">
