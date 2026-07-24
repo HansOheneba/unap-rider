@@ -1,6 +1,13 @@
 import { getToken } from "./token";
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8083";
+/** Browser talks to our BFF; the BFF talks to the real API (avoids CORS). */
+const BASE = "/api";
+
+/** Public auth paths — never attach Authorization. */
+const PUBLIC_PATHS = new Set([
+  "/rider/auth/send-otp",
+  "/rider/auth/verify-otp",
+]);
 
 export function useMockApi(): boolean {
   return process.env.NEXT_PUBLIC_USE_MOCK_API === "true";
@@ -31,27 +38,55 @@ function isEnvelope(json: unknown): json is ApiEnvelope<unknown> {
   );
 }
 
+function pathWithoutQuery(path: string): string {
+  return path.split("?")[0] ?? path;
+}
+
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
-  const token = getToken();
-  const res = await fetch(`${BASE}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options?.headers,
-    },
+  const bare = pathWithoutQuery(path);
+  const isPublic = PUBLIC_PATHS.has(bare);
+  const token = isPublic ? null : getToken();
+
+  console.log(`[api] → ${options?.method ?? "GET"} ${BASE}${path}`, {
+    public: isPublic,
+    hasAuthHeader: Boolean(token),
   });
 
-  if (res.status === 204) return undefined as T;
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options?.headers,
+      },
+    });
+  } catch (err) {
+    console.error(`[api] network error ${path}`, err);
+    throw new ApiError(
+      err instanceof Error ? err.message : "Network error",
+      0,
+    );
+  }
+
+  if (res.status === 204) {
+    console.log(`[api] ← 204 ${path}`);
+    return undefined as T;
+  }
 
   const json = await res.json().catch(() => null);
+  console.log(`[api] ← ${res.status} ${path}`, json);
 
   if (isEnvelope(json)) {
     if (!json.success) {
-      throw new ApiError(json.errors?.[0] ?? `HTTP ${res.status}`, res.status);
+      const message = json.errors?.[0] ?? `HTTP ${res.status}`;
+      console.error(`[api] envelope error ${path}`, message, json.errors);
+      throw new ApiError(message, res.status);
     }
     return json.data as T;
   }
@@ -61,6 +96,7 @@ export async function apiFetch<T>(
       (json as { error?: string; message?: string } | null)?.error ??
       (json as { message?: string } | null)?.message ??
       `HTTP ${res.status}`;
+    console.error(`[api] http error ${path}`, message);
     throw new ApiError(message, res.status);
   }
 

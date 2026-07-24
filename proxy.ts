@@ -8,6 +8,7 @@ export function proxy(request: NextRequest) {
 
   if (
     PUBLIC.some((p) => pathname === p) ||
+    pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/logos") ||
     pathname.startsWith("/icons") ||

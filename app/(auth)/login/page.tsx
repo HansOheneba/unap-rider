@@ -51,8 +51,11 @@ export default function LoginPage() {
       await sendOtp(trimmed);
       toast.success("Code sent.");
       setStep("otp");
-    } catch {
-      toast.error("Could not send code. Try again.");
+    } catch (err) {
+      console.error("[login] sendOtp failed", err);
+      toast.error(
+        err instanceof Error ? err.message : "Could not send code. Try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -66,8 +69,11 @@ export default function LoginPage() {
       setSession(t, r);
       toast.success(`Welcome, ${r.firstName}.`);
       router.push("/");
-    } catch {
-      toast.error("Invalid code. Try again.");
+    } catch (err) {
+      console.error("[login] verifyOtp failed", err);
+      toast.error(
+        err instanceof Error ? err.message : "Invalid code. Try again.",
+      );
       setOtp("");
     } finally {
       setLoading(false);
