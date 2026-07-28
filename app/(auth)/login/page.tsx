@@ -5,7 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/lib/auth-store";
-import { sendOtp, verifyOtp } from "@/lib/api/auth";
+import { getMe, sendOtp, verifyOtp } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,12 +28,36 @@ export default function LoginPage() {
   const token = useAuthStore((s) => s.token);
   const rider = useAuthStore((s) => s.rider);
   const setSession = useAuthStore((s) => s.setSession);
+  const setRider = useAuthStore((s) => s.setRider);
+  const logout = useAuthStore((s) => s.logout);
 
   React.useEffect(() => {
-    if (hydrated && token && rider) {
-      router.replace("/");
+    if (!hydrated || !token || !rider) return;
+
+    let cancelled = false;
+
+    async function confirmSession() {
+      try {
+        const me = await getMe();
+        if (cancelled) return;
+        setRider(me);
+        router.replace("/");
+      } catch (err) {
+        if (cancelled) return;
+        if (
+          err instanceof ApiError &&
+          (err.status === 401 || err.status === 403)
+        ) {
+          logout();
+        }
+      }
     }
-  }, [hydrated, token, rider, router]);
+
+    void confirmSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, token, rider, router, setRider, logout]);
 
   const [step, setStep] = React.useState<Step>("email");
   const [email, setEmail] = React.useState("");

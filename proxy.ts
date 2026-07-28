@@ -18,15 +18,11 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Auth token is set client-side after OTP; RiderGuard handles hydration.
-  // Cookie is a lightweight gate for direct URL hits before client loads.
+  // Cookie is a lightweight gate only. Session validity is confirmed client-side
+  // via GET /rider/auth/me in RiderGuard (stale JWTs must reach /login after logout).
   const token = request.cookies.get("unap-rider-token")?.value;
   if (!token && pathname !== "/login") {
     return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  if (token && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();

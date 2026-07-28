@@ -102,7 +102,7 @@ async function proxy(
     }
   }
 
-  if (path.join("/") === "auth/logout") {
+  if (path.join("/") === "auth/logout" || upstream.status === 401) {
     response.cookies.set("unap-rider-token", "", {
       path: "/",
       maxAge: 0,

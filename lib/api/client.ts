@@ -22,6 +22,22 @@ export class ApiError extends Error {
   }
 }
 
+function isUnauthorizedStatus(status: number): boolean {
+  return status === 401 || status === 403;
+}
+
+/** Clear persisted session and send the rider to login when the JWT is dead. */
+function forceLogoutOnUnauthorized(): void {
+  if (typeof window === "undefined") return;
+  // Lazy import avoids a circular dependency at module init (auth-store → … → client).
+  void import("@/lib/auth-store").then(({ useAuthStore }) => {
+    useAuthStore.getState().logout();
+    if (window.location.pathname !== "/login") {
+      window.location.replace("/login");
+    }
+  });
+}
+
 /** Every backend response is wrapped as { success, data, errors }. */
 type ApiEnvelope<T> = {
   success: boolean;
@@ -81,6 +97,10 @@ export async function apiFetch<T>(
 
   const json = await res.json().catch(() => null);
   console.log(`[api] ← ${res.status} ${path}`, json);
+
+  if (isUnauthorizedStatus(res.status) && !isPublic) {
+    forceLogoutOnUnauthorized();
+  }
 
   if (isEnvelope(json)) {
     if (!json.success) {

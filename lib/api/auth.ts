@@ -1,5 +1,5 @@
 import type { RiderSession } from "@/types";
-import { apiFetchOrMock } from "./client";
+import { ApiError, apiFetchOrMock } from "./client";
 import { getToken } from "./token";
 import { mockStore } from "@/lib/mock/data-store";
 
@@ -67,7 +67,11 @@ export async function logout(): Promise<void> {
 
 export async function getMe(): Promise<RiderSession> {
   return apiFetchOrMock("/rider/auth/me", () => {
-    throw new Error("Not authenticated");
+    const riderId = riderIdFromToken(getToken());
+    if (!riderId) throw new ApiError("Not authenticated", 401);
+    const rider = mockStore.getRider(riderId);
+    if (!rider) throw new ApiError("Not authenticated", 401);
+    return rider;
   });
 }
 
