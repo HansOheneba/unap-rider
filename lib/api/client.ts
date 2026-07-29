@@ -26,6 +26,40 @@ function isUnauthorizedStatus(status: number): boolean {
   return status === 401 || status === 403;
 }
 
+/**
+ * Some upstream responses use HTTP 200 with a body like
+ * `{ success: false, status: 401, message: "..." }` — treat body status as authoritative.
+ */
+function resolveStatus(httpStatus: number, json: unknown): number {
+  if (
+    typeof json === "object" &&
+    json !== null &&
+    "status" in json &&
+    typeof (json as { status: unknown }).status === "number"
+  ) {
+    const bodyStatus = (json as { status: number }).status;
+    if (isUnauthorizedStatus(bodyStatus)) return bodyStatus;
+  }
+  return httpStatus;
+}
+
+function errorMessageFromBody(json: unknown, fallbackStatus: number): string {
+  if (typeof json !== "object" || json === null) {
+    return `HTTP ${fallbackStatus}`;
+  }
+  const body = json as {
+    message?: string;
+    error?: string;
+    errors?: string[];
+  };
+  return (
+    body.errors?.[0] ??
+    body.message ??
+    body.error ??
+    `HTTP ${fallbackStatus}`
+  );
+}
+
 /** Clear persisted session and send the rider to login when the JWT is dead. */
 function forceLogoutOnUnauthorized(): void {
   if (typeof window === "undefined") return;
@@ -51,6 +85,15 @@ function isEnvelope(json: unknown): json is ApiEnvelope<unknown> {
     json !== null &&
     "success" in json &&
     "data" in json
+  );
+}
+
+function isFailedPayload(json: unknown): boolean {
+  return (
+    typeof json === "object" &&
+    json !== null &&
+    "success" in json &&
+    (json as { success: unknown }).success === false
   );
 }
 
@@ -98,26 +141,35 @@ export async function apiFetch<T>(
   const json = await res.json().catch(() => null);
   console.log(`[api] ← ${res.status} ${path}`, json);
 
-  if (isUnauthorizedStatus(res.status) && !isPublic) {
+  const status = resolveStatus(res.status, json);
+
+  if (isUnauthorizedStatus(status) && !isPublic) {
     forceLogoutOnUnauthorized();
+    const message = errorMessageFromBody(json, status);
+    console.error(`[api] unauthorized ${path}`, message);
+    throw new ApiError(message, status);
   }
 
   if (isEnvelope(json)) {
     if (!json.success) {
-      const message = json.errors?.[0] ?? `HTTP ${res.status}`;
+      const message = errorMessageFromBody(json, status);
       console.error(`[api] envelope error ${path}`, message, json.errors);
-      throw new ApiError(message, res.status);
+      throw new ApiError(message, status);
     }
     return json.data as T;
   }
 
+  // success:false without a `data` field (common auth-failure shape from upstream)
+  if (isFailedPayload(json)) {
+    const message = errorMessageFromBody(json, status);
+    console.error(`[api] failed payload ${path}`, message);
+    throw new ApiError(message, status);
+  }
+
   if (!res.ok) {
-    const message =
-      (json as { error?: string; message?: string } | null)?.error ??
-      (json as { message?: string } | null)?.message ??
-      `HTTP ${res.status}`;
+    const message = errorMessageFromBody(json, status);
     console.error(`[api] http error ${path}`, message);
-    throw new ApiError(message, res.status);
+    throw new ApiError(message, status);
   }
 
   return json as T;

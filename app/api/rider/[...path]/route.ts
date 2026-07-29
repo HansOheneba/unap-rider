@@ -81,7 +81,24 @@ async function proxy(
     );
   }
 
-  const response = NextResponse.json(json, { status: upstream.status });
+  // Upstream sometimes returns HTTP 200 with `{ success: false, status: 401 }`.
+  // Prefer the body status so the client and cookie cleanup see a real 401.
+  let httpStatus = upstream.status;
+  if (
+    json &&
+    typeof json === "object" &&
+    "success" in json &&
+    (json as { success: boolean }).success === false &&
+    "status" in json &&
+    typeof (json as { status: unknown }).status === "number"
+  ) {
+    const bodyStatus = (json as { status: number }).status;
+    if (bodyStatus === 401 || bodyStatus === 403) {
+      httpStatus = bodyStatus;
+    }
+  }
+
+  const response = NextResponse.json(json, { status: httpStatus });
 
   // On successful verify, set the gate cookie the middleware already checks.
   if (
@@ -102,7 +119,7 @@ async function proxy(
     }
   }
 
-  if (path.join("/") === "auth/logout" || upstream.status === 401) {
+  if (path.join("/") === "auth/logout" || httpStatus === 401) {
     response.cookies.set("unap-rider-token", "", {
       path: "/",
       maxAge: 0,
