@@ -71,6 +71,8 @@ function toAssignment(store: MockStoreData, order: MockOrder): RiderAssignment {
     itemCount: order.items.reduce((s, i) => s + i.quantity, 0),
     customerNote: order.customerNote,
     internalNote: order.riderNote || null,
+    paymentMethod: order.paymentMethod ?? "pay_on_delivery",
+    paymentStatus: order.paymentStatus ?? "pending_collection",
     assignedAt: assignedEvent?.at ?? order.createdAt,
     pickedUpAt: order.pickedUpAt,
     outForDeliveryAt: order.outForDeliveryAt,

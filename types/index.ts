@@ -55,6 +55,22 @@ export type RiderRunState = {
   totalActive: number;
 };
 
+export type PaymentMethod =
+  | "momo"
+  | "card"
+  | "cash"
+  | "paystack"
+  | "pay_on_delivery"
+  | "on_delivery";
+
+export type PaymentStatus =
+  | "unpaid"
+  | "pending_collection"
+  | "paid"
+  | "partially_refunded"
+  | "refunded"
+  | "failed";
+
 export type RiderAssignment = {
   id: string;
   orderNumber: string;
@@ -80,6 +96,11 @@ export type RiderAssignment = {
   itemCount: number;
   customerNote: string | null;
   internalNote: string | null;
+  /** How the customer pays; riders need this for cash collection. */
+  paymentMethod: PaymentMethod | string | null;
+  paymentStatus: PaymentStatus | string | null;
+  /** Optional ready-made label from API (e.g. "on_delivery"). */
+  payment?: string | null;
   assignedAt: string;
   pickedUpAt: string | null;
   outForDeliveryAt: string | null;

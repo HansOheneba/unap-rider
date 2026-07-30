@@ -21,7 +21,7 @@ import { AssignmentStatusBadge } from "@/components/shared/status-badge";
 import { getStatusTheme } from "@/lib/status-theme";
 import { Button } from "@/components/ui/button";
 import { AssignmentDetailSkeleton } from "@/components/skeletons/shipment-skeletons";
-import { formatDeliveryLocation, telUrl, whatsAppUrl } from "@/lib/format";
+import { formatDeliveryLocation, telUrl, whatsAppUrl, assignmentPaymentLabel } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 function ListRow({
@@ -94,6 +94,7 @@ export default function AssignmentDetailPage() {
   const theme = getStatusTheme(data.status);
   const phone = data.customerPhone;
   const wa = data.customerWhatsapp ?? data.customerPhone;
+  const paymentLabel = assignmentPaymentLabel(data);
   return (
     <>
       <div className="on-dark bg-zinc-900 px-3 pb-3 pt-3">
@@ -121,7 +122,7 @@ export default function AssignmentDetailPage() {
         </div>
       </div>
 
-      <div className="space-y-3 bg-zinc-100 px-3 py-3 pb-28">
+      <div className="space-y-3 bg-zinc-100 px-3 py-3 pb-4">
         <div className="rounded-xl bg-white px-3 py-2.5 shadow-sm ring-1 ring-zinc-100">
           <AssignmentStatusBadge status={data.status} size="sm" />
           <small className="mt-1.5 block text-zinc-500">
@@ -216,8 +217,12 @@ export default function AssignmentDetailPage() {
           />
           <RowDivider />
           <ListRow label="Status" value={theme.listLabel} />
-          <RowDivider />
-          <ListRow label="Payment" value="Paid" />
+          {paymentLabel !== "—" ? (
+            <>
+              <RowDivider />
+              <ListRow label="Payment" value={paymentLabel} />
+            </>
+          ) : null}
           {data.items.map((item, i) => (
             <React.Fragment key={i}>
               <RowDivider />

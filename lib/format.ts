@@ -96,3 +96,64 @@ export function telUrl(phone: string): string {
 export function googleMapsSearchUrl(query: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  momo: "Mobile Money",
+  card: "Card",
+  cash: "Cash",
+  paystack: "Paystack",
+  pay_on_delivery: "On delivery",
+  on_delivery: "On delivery",
+};
+
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  unpaid: "Unpaid",
+  pending_collection: "Collect on delivery",
+  paid: "Paid",
+  partially_refunded: "Partially refunded",
+  refunded: "Refunded",
+  failed: "Failed",
+};
+
+/** Rider-facing payment label (collect vs already paid). */
+export function assignmentPaymentLabel(
+  assignment: Pick<
+    RiderAssignment,
+    "paymentMethod" | "paymentStatus" | "payment"
+  >,
+): string {
+  const rawPayment = assignment.payment?.trim().toLowerCase() ?? "";
+  if (rawPayment === "pay_on_delivery" || rawPayment === "on_delivery") {
+    return "On delivery";
+  }
+  if (rawPayment === "paid") return "Paid";
+  if (rawPayment && PAYMENT_METHOD_LABELS[rawPayment]) {
+    return PAYMENT_METHOD_LABELS[rawPayment];
+  }
+  if (rawPayment && PAYMENT_STATUS_LABELS[rawPayment]) {
+    return PAYMENT_STATUS_LABELS[rawPayment];
+  }
+  if (rawPayment) return statusLabel(rawPayment);
+
+  const method = assignment.paymentMethod?.trim().toLowerCase() ?? "";
+  const status = assignment.paymentStatus?.trim().toLowerCase() ?? "";
+
+  if (method === "pay_on_delivery" || method === "on_delivery") {
+    return "On delivery";
+  }
+  if (status === "pending_collection" || status === "unpaid") {
+    return method && PAYMENT_METHOD_LABELS[method]
+      ? PAYMENT_METHOD_LABELS[method]
+      : "On delivery";
+  }
+  if (status === "paid") return "Paid";
+  if (method && PAYMENT_METHOD_LABELS[method]) {
+    return PAYMENT_METHOD_LABELS[method];
+  }
+  if (status && PAYMENT_STATUS_LABELS[status]) {
+    return PAYMENT_STATUS_LABELS[status];
+  }
+  if (method) return statusLabel(method);
+  if (status) return statusLabel(status);
+  return "—";
+}

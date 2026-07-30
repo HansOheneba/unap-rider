@@ -26,6 +26,8 @@ export type MockOrder = {
     colorName: string | null;
   }[];
   customerNote: string | null;
+  paymentMethod?: string | null;
+  paymentStatus?: string | null;
   pickedUpAt: string | null;
   outForDeliveryAt: string | null;
   deliveredAt: string | null;

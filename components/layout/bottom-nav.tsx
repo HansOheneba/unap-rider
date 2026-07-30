@@ -6,25 +6,35 @@ import { Box, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links = [
-  { href: "/", label: "Shipments", icon: Box },
-  { href: "/profile", label: "Profile", icon: User },
+  {
+    href: "/",
+    label: "Shipments",
+    icon: Box,
+    match: (path: string) => path === "/" || path.startsWith("/assignments"),
+  },
+  {
+    href: "/profile",
+    label: "Profile",
+    icon: User,
+    match: (path: string) => path.startsWith("/profile"),
+  },
 ];
 
-export function BottomNav() {
+/** Tab row only. Parent owns fixed positioning / safe area. */
+export function BottomNavLinks({ className }: { className?: string }) {
   const pathname = usePathname();
 
   return (
-    <nav className="app-nav fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white safe-bottom">
-      <div className="relative mx-auto flex h-16 max-w-lg items-center justify-around px-8">
-        {links.map(({ href, label, icon: Icon }) => {
-          const active =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+    <nav className={cn("app-nav", className)}>
+      <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-8">
+        {links.map(({ href, label, icon: Icon, match }) => {
+          const active = match(pathname);
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                "flex min-h-12 flex-col items-center justify-center gap-1",
+                "flex min-h-12 min-w-16 flex-col items-center justify-center gap-1",
                 active ? "text-zinc-900" : "text-zinc-400",
               )}
             >
@@ -35,5 +45,13 @@ export function BottomNav() {
         })}
       </div>
     </nav>
+  );
+}
+
+export function BottomNav() {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200 bg-white safe-bottom">
+      <BottomNavLinks />
+    </div>
   );
 }
