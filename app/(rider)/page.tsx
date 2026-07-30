@@ -2,11 +2,13 @@
 
 import * as React from "react";
 import { format } from "date-fns";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRiderAuth } from "@/lib/hooks/useRiderAuth";
 import { useRunState } from "@/lib/hooks/useAssignments";
 import { ShipmentList } from "@/components/assignments/shipment-list";
 import { OnMyWayBanner } from "@/components/assignments/on-my-way-banner";
 import { PageHeader } from "@/components/layout/page-header";
+import { PullToRefresh } from "@/components/layout/pull-to-refresh";
 import {
   ShipmentListSkeleton,
   TabsSkeleton,
@@ -19,6 +21,7 @@ const tabClass =
 
 export default function TodayPage() {
   const { rider } = useRiderAuth();
+  const queryClient = useQueryClient();
   const { data: runState, isLoading: runLoading } = useRunState();
   const [tab, setTab] = React.useState("assigned");
 
@@ -28,6 +31,13 @@ export default function TodayPage() {
     else if (runState.phase === "ready_to_depart") setTab("assigned");
     else if (runState.phase === "pickup") setTab("assigned");
   }, [runState?.phase]);
+
+  const refreshShipments = async () => {
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: ["rider", "run-state"] }),
+      queryClient.refetchQueries({ queryKey: ["rider", "assignments"] }),
+    ]);
+  };
 
   if (runLoading) {
     return (
@@ -52,7 +62,7 @@ export default function TodayPage() {
         subtitle={`${rider?.firstName ?? "Rider"} · Accra runs · ${format(new Date(), "EEE, MMM d")}`}
       />
 
-      <div className="space-y-3 px-3 py-3">
+      <PullToRefresh onRefresh={refreshShipments} className="space-y-3 px-3 py-3">
         {runState?.canDepart ? (
           <OnMyWayBanner packageCount={runState.pickedUpCount} />
         ) : null}
@@ -99,7 +109,7 @@ export default function TodayPage() {
             />
           </TabsContent>
         </Tabs>
-      </div>
+      </PullToRefresh>
     </div>
   );
 }

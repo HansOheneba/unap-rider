@@ -136,37 +136,28 @@ export default function AssignmentDetailPage() {
         </div>
 
         <GroupCard>
-          <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-            <div className="min-w-0">
-              <small>Deliver to</small>
-              <h3 className="truncate">{data.customerName}</h3>
-            </div>
-            <div className="flex shrink-0 gap-1.5">
-              <Button
-                size="icon"
-                className="h-8 w-8 rounded-full bg-[#25D366] text-white hover:bg-[#20BD5A]"
-                asChild
+          <div className="min-w-0 px-3 py-2.5">
+            <small>Deliver to</small>
+            <h3 className="truncate">{data.customerName}</h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 px-3 pb-3">
+            <Button variant="whatsapp" className="rounded-full" asChild>
+              <a
+                href={whatsAppUrl(wa)}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <a
-                  href={whatsAppUrl(wa)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="WhatsApp customer"
-                >
-                  <WhatsAppIcon />
-                </a>
-              </Button>
-              <Button
-                size="icon"
-                variant="outline"
-                className="h-8 w-8 rounded-full"
-                asChild
-              >
-                <a href={telUrl(phone)}>
-                  <Phone className="h-4 w-4" />
-                </a>
-              </Button>
-            </div>
+                <WhatsAppIcon className="h-5 w-5" />
+                WhatsApp
+              </a>
+            </Button>
+            <Button variant="call" className="rounded-full" asChild>
+              <a href={telUrl(phone)}>
+                <Phone className="h-5 w-5" />
+                Call
+              </a>
+            </Button>
           </div>
 
           <RowDivider />
