@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronRight, MapPin } from "lucide-react";
 import type { RiderAssignment } from "@/types";
+import { assignmentNeedsCollection } from "@/lib/format";
 import { getStatusTheme } from "@/lib/status-theme";
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
 export function AssignmentCard({ assignment }: Props) {
   const theme = getStatusTheme(assignment.status);
   const headline = assignment.address;
+  const needsCollection = assignmentNeedsCollection(assignment);
   const meta = [assignment.customerName, assignment.district]
     .filter(Boolean)
     .join(" · ");
@@ -31,6 +33,12 @@ export function AssignmentCard({ assignment }: Props) {
             <span>{assignment.trackingNumber}</span>
             <span> · </span>
             <span className={theme.text}>{theme.listLabel}</span>
+            {needsCollection ? (
+              <>
+                <span> · </span>
+                <span className="font-medium text-amber-700">Collect</span>
+              </>
+            ) : null}
           </p>
           <p className="mt-0.5 line-clamp-1 text-[0.6875rem] font-normal text-zinc-400">
             {meta}

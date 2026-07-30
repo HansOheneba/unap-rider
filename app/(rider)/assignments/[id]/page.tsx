@@ -21,7 +21,13 @@ import { AssignmentStatusBadge } from "@/components/shared/status-badge";
 import { getStatusTheme } from "@/lib/status-theme";
 import { Button } from "@/components/ui/button";
 import { AssignmentDetailSkeleton } from "@/components/skeletons/shipment-skeletons";
-import { formatDeliveryLocation, telUrl, whatsAppUrl, assignmentPaymentLabel } from "@/lib/format";
+import {
+  formatDeliveryLocation,
+  telUrl,
+  whatsAppUrl,
+  assignmentPaymentLabel,
+  assignmentNeedsCollection,
+} from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 function ListRow({
@@ -95,6 +101,7 @@ export default function AssignmentDetailPage() {
   const phone = data.customerPhone;
   const wa = data.customerWhatsapp ?? data.customerPhone;
   const paymentLabel = assignmentPaymentLabel(data);
+  const needsCollection = assignmentNeedsCollection(data);
   return (
     <>
       <div className="on-dark bg-zinc-900 px-3 pb-3 pt-3">
@@ -135,6 +142,26 @@ export default function AssignmentDetailPage() {
                   : "This stop is complete."}
           </small>
         </div>
+
+        {needsCollection ? (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5">
+            <small className="font-semibold uppercase tracking-wide text-amber-800">
+              Collect payment
+            </small>
+            <p className="mt-0.5 text-[length:var(--text-caption)] font-medium text-amber-950">
+              {paymentLabel === "Collect cash"
+                ? "Customer pays cash on delivery. Take the money before you leave."
+                : "Payment is pending collection. Take the money before you leave."}
+            </p>
+          </div>
+        ) : paymentLabel === "Paid" ? (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5">
+            <small className="font-medium text-emerald-700">Paid</small>
+            <p className="mt-0.5 text-[length:var(--text-caption)] font-medium text-emerald-900">
+              No collection needed at this stop.
+            </p>
+          </div>
+        ) : null}
 
         <GroupCard>
           <div className="min-w-0 px-3 py-2.5">
@@ -220,7 +247,17 @@ export default function AssignmentDetailPage() {
           {paymentLabel !== "—" ? (
             <>
               <RowDivider />
-              <ListRow label="Payment" value={paymentLabel} />
+              <ListRow
+                label="Payment"
+                value={paymentLabel}
+                className={
+                  needsCollection
+                    ? "[&_p]:text-amber-700"
+                    : paymentLabel === "Paid"
+                      ? "[&_p]:text-emerald-700"
+                      : undefined
+                }
+              />
             </>
           ) : null}
           {data.items.map((item, i) => (

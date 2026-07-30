@@ -107,13 +107,39 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 };
 
 const PAYMENT_STATUS_LABELS: Record<string, string> = {
-  unpaid: "Unpaid",
-  pending_collection: "Collect on delivery",
+  unpaid: "Collect payment",
+  pending_collection: "Collect payment",
   paid: "Paid",
   partially_refunded: "Partially refunded",
   refunded: "Refunded",
   failed: "Failed",
 };
+
+const COLLECT_ON_DELIVERY_METHODS = new Set([
+  "cash",
+  "pay_on_delivery",
+  "on_delivery",
+]);
+
+/** True when the rider must take payment from the customer. */
+export function assignmentNeedsCollection(
+  assignment: Pick<
+    RiderAssignment,
+    "paymentMethod" | "paymentStatus" | "payment"
+  >,
+): boolean {
+  const status = assignment.paymentStatus?.trim().toLowerCase() ?? "";
+  if (status === "paid" || status === "refunded" || status === "partially_refunded") {
+    return false;
+  }
+  if (status === "pending_collection" || status === "unpaid") return true;
+
+  const method = assignment.paymentMethod?.trim().toLowerCase() ?? "";
+  if (COLLECT_ON_DELIVERY_METHODS.has(method)) return true;
+
+  const rawPayment = assignment.payment?.trim().toLowerCase() ?? "";
+  return COLLECT_ON_DELIVERY_METHODS.has(rawPayment);
+}
 
 /** Rider-facing payment label (collect vs already paid). */
 export function assignmentPaymentLabel(
@@ -122,11 +148,20 @@ export function assignmentPaymentLabel(
     "paymentMethod" | "paymentStatus" | "payment"
   >,
 ): string {
+  const method = assignment.paymentMethod?.trim().toLowerCase() ?? "";
+  const status = assignment.paymentStatus?.trim().toLowerCase() ?? "";
   const rawPayment = assignment.payment?.trim().toLowerCase() ?? "";
-  if (rawPayment === "pay_on_delivery" || rawPayment === "on_delivery") {
-    return "On delivery";
+
+  if (status === "paid" || rawPayment === "paid") return "Paid";
+
+  if (assignmentNeedsCollection(assignment)) {
+    if (method === "cash") return "Collect cash";
+    if (method && PAYMENT_METHOD_LABELS[method] && !COLLECT_ON_DELIVERY_METHODS.has(method)) {
+      return `Collect · ${PAYMENT_METHOD_LABELS[method]}`;
+    }
+    return "Collect payment";
   }
-  if (rawPayment === "paid") return "Paid";
+
   if (rawPayment && PAYMENT_METHOD_LABELS[rawPayment]) {
     return PAYMENT_METHOD_LABELS[rawPayment];
   }
@@ -135,23 +170,11 @@ export function assignmentPaymentLabel(
   }
   if (rawPayment) return statusLabel(rawPayment);
 
-  const method = assignment.paymentMethod?.trim().toLowerCase() ?? "";
-  const status = assignment.paymentStatus?.trim().toLowerCase() ?? "";
-
-  if (method === "pay_on_delivery" || method === "on_delivery") {
-    return "On delivery";
-  }
-  if (status === "pending_collection" || status === "unpaid") {
-    return method && PAYMENT_METHOD_LABELS[method]
-      ? PAYMENT_METHOD_LABELS[method]
-      : "On delivery";
-  }
-  if (status === "paid") return "Paid";
-  if (method && PAYMENT_METHOD_LABELS[method]) {
-    return PAYMENT_METHOD_LABELS[method];
-  }
   if (status && PAYMENT_STATUS_LABELS[status]) {
     return PAYMENT_STATUS_LABELS[status];
+  }
+  if (method && PAYMENT_METHOD_LABELS[method]) {
+    return PAYMENT_METHOD_LABELS[method];
   }
   if (method) return statusLabel(method);
   if (status) return statusLabel(status);
