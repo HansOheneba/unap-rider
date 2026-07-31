@@ -1,7 +1,22 @@
 "use client";
 
+import * as React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AssignmentStatus, RiderAssignment } from "@/types";
+import {
+  getAssignment,
+  getAssignments,
+  getHistory,
+  getRunState,
+  getTodayStats,
+  markDelivered,
+  markFailed,
+  markOnMyWay,
+  markPickedUp,
+} from "@/lib/api/assignments";
+
+/** Align with AGENTS.md: poll every 60s when the tab is visible. */
+const POLL_MS = 60_000;
 
 function sortAssignments(
   list: RiderAssignment[],
@@ -21,23 +36,13 @@ function sortAssignments(
     );
   });
 }
-import {
-  getAssignment,
-  getAssignments,
-  getHistory,
-  getRunState,
-  getTodayStats,
-  markDelivered,
-  markFailed,
-  markOnMyWay,
-  markPickedUp,
-} from "@/lib/api/assignments";
 
 export function useRunState() {
   return useQuery({
     queryKey: ["rider", "run-state"],
     queryFn: getRunState,
-    refetchInterval: 30_000,
+    refetchInterval: POLL_MS,
+    refetchIntervalInBackground: false,
   });
 }
 
@@ -53,7 +58,8 @@ export function useTodayStats() {
   return useQuery({
     queryKey: ["rider", "stats", "today"],
     queryFn: getTodayStats,
-    refetchInterval: 60_000,
+    refetchInterval: POLL_MS,
+    refetchIntervalInBackground: false,
   });
 }
 
@@ -62,26 +68,32 @@ export function useAssignments(statuses?: AssignmentStatus[]) {
     (s) => s === "delivered" || s === "failed",
   );
 
-  return useQuery({
-    queryKey: ["rider", "assignments", statuses],
-    queryFn: async () => {
-      const all = await getAssignments(
-        isDoneTab ? undefined : { date: "today" },
-      );
-      if (!statuses?.length) return all;
-      return sortAssignments(
-        all.filter((a) => statuses.includes(a.status)),
-        statuses,
-      );
-    },
-    refetchInterval: 30_000,
+  // One shared "today" query for Assigned + Delivering tabs so tab switches
+  // and dual observers do not double-hit the backend.
+  const query = useQuery({
+    queryKey: ["rider", "assignments", isDoneTab ? "all" : "today"],
+    queryFn: () => getAssignments(isDoneTab ? undefined : { date: "today" }),
+    refetchInterval: isDoneTab ? false : POLL_MS,
+    refetchIntervalInBackground: false,
   });
+
+  const data = React.useMemo(() => {
+    if (!query.data) return undefined;
+    if (!statuses?.length) return query.data;
+    return sortAssignments(
+      query.data.filter((a) => statuses.includes(a.status)),
+      statuses,
+    );
+  }, [query.data, statuses]);
+
+  return { ...query, data };
 }
 
 export function useAssignment(orderId: string) {
   return useQuery({
     queryKey: ["rider", "assignment", orderId],
     queryFn: () => getAssignment(orderId),
+    enabled: Boolean(orderId),
   });
 }
 
