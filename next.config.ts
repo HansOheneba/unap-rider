@@ -14,6 +14,12 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
+  // Lean Node deploy for cPanel (Setup Node.js App + server.js entry).
+  output: "standalone",
+  // Avoid sharp native builds on shared hosts; logo/assets still load via <Image>.
+  images: {
+    unoptimized: true,
+  },
   // Serwist injects webpack config; explicit empty turbopack avoids dev startup errors.
   turbopack: {},
 };
